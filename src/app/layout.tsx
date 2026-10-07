@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Tenor_Sans } from "next/font/google";
+import { Analytics } from "@/components/Analytics";
+import { CartProvider } from "@/components/cart/CartProvider";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { TopBar } from "@/components/layout/TopBar";
@@ -24,10 +26,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-paper focus:px-4 focus:py-3">
           Pular para o conteúdo
         </a>
-        <TopBar />
-        <Header />
-        <main id="conteudo">{children}</main>
-        <Footer />
+        <CartProvider>
+          <TopBar />
+          <Header />
+          <main id="conteudo">{children}</main>
+          <Footer />
+        </CartProvider>
+        <Analytics />
       </body>
     </html>
   );

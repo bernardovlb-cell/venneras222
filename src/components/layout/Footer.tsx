@@ -2,6 +2,7 @@ import Link from "next/link";
 import { InstagramIcon, WhatsAppIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import { PaymentBadges } from "@/components/PaymentBadges";
+import { WhatsAppLink } from "@/components/WhatsAppLink";
 import { site, whatsappUrl } from "@/config/site";
 
 const links = [
@@ -47,9 +48,9 @@ export function Footer() {
               </li>
               {wa && (
                 <li>
-                  <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm hover:underline">
+                  <WhatsAppLink origem="rodape" className="inline-flex min-h-11 items-center gap-2 text-sm hover:underline">
                     <WhatsAppIcon className="size-5" /> WhatsApp
-                  </a>
+                  </WhatsAppLink>
                 </li>
               )}
             </ul>
