@@ -30,6 +30,7 @@ export function Colecao({ categoria }: { categoria?: Categoria }) {
         </ul>
       </nav>
       <div className="mt-10">
+        <h2 className="sr-only">Produtos</h2>
         {lista.length > 0 ? (
           <ProductGrid produtos={lista} priorityCount={2} />
         ) : (
