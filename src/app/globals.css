@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens Venneras.
+ * Tailwind v4 lê os tokens daqui (@theme) — não existe mais tailwind.config.
+ * Cada token vira classe (bg-ink, text-paper...) e variável CSS (--color-ink...).
+ *
+ * REGRA DO ÂMBAR: --color-amber é só detalhe (selos pequenos, sublinhado ativo, ícone).
+ * Proibido como cor de texto sobre paper (contraste ~1.9:1) e como fundo de botão principal.
+ */
+@theme {
+  --color-ink: #121212;
+  --color-paper: #fafaf8;
+  --color-amber: #f5a623;
+
+  /* Cinzas derivados de ink. muted = ink 70% sobre paper ≈ #5a5a59 → contraste ~6.6:1 (AA). */
+  --color-muted: #5a5a59;
+  --color-line: rgb(18 18 18 / 0.12);
+  --color-placeholder: #e6e5e1;
+
+  --font-display: var(--font-tenor), "Times New Roman", serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --tracking-wordmark: 0.13em;
+  --tracking-title: 0.08em;
+  --tracking-label: 0.14em;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+@utility title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-title);
+  font-weight: 400;
+}
+
+@utility label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  font-weight: 500;
+}
