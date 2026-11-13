@@ -51,3 +51,11 @@ export const RobotIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><re
 export const BallIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><circle cx="12" cy="12" r="9" /><path d="M3.6 9.5c5.2 2.1 11.6 2.1 16.8 0M12 3c-2.6 3.2-2.6 14.8 0 18" /></svg>);
 export const RocketIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><path d="M12 3c3 2.5 4 6 4 10l-1.5 3h-5L8 13c0-4 1-7.5 4-10ZM8 13l-3 3v2.5l3.5-1.5M16 13l3 3v2.5L15.5 17M10.5 19.5 12 22l1.5-2.5" /><circle cx="12" cy="9.5" r="1.5" /></svg>);
 export const BoxIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><path d="M4 7.5 12 4l8 3.5v9L12 20l-8-3.5ZM4 7.5 12 11l8-3.5M12 11v9" /></svg>);
+
+/* Redes sociais (traço, mesmo desenho dos demais). */
+export const InstagramIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none" /></svg>);
+export const FacebookIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><path d="M14 8.5V7a1.5 1.5 0 0 1 1.5-1.5H17V3h-2.5A3.5 3.5 0 0 0 11 6.5v2H8.5V11H11v10h3V11h2.5l.5-2.5Z" /></svg>);
+export const TikTokIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5M14 3c.3 2.6 2 4.4 4.5 4.6" /></svg>);
+export const YouTubeIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="m10 9.5 4.5 2.5-4.5 2.5Z" fill="currentColor" /></svg>);
+export const MailIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="m4 7.5 8 6 8-6" /></svg>);
+export const MapPinIcon = ({ size, ...p }: P) => (<svg {...base(size)} {...p}><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21Z" /><circle cx="12" cy="10" r="2.3" /></svg>);

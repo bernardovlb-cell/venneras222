@@ -48,7 +48,8 @@ export async function Header() {
               <MenuIcon size={18} /> Todas as categorias <ChevronDown size={16} className="transition group-focus-within:rotate-180 group-hover:rotate-180" />
             </button>
             <div className="invisible absolute left-0 top-full z-50 w-[min(880px,calc(100vw-3rem))] translate-y-2 pt-2 opacity-0 transition group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-              <ul className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-white p-2 shadow-pop xl:grid-cols-4">
+              <div className="rounded-xl border border-line bg-white p-2 shadow-pop">
+              <ul className="grid grid-cols-3 gap-1 xl:grid-cols-4">
                 {cats.map((c) => (
                   <li key={c.id}>
                     <Link href={`/c/${c.slug}`} className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-cream">
@@ -61,6 +62,8 @@ export async function Header() {
                   </li>
                 ))}
               </ul>
+              <Link href="/categorias" className="mt-1 flex min-h-[40px] items-center justify-center rounded-lg border-t border-line pt-1 text-sm font-extrabold text-primary hover:bg-cream">Ver todas as categorias</Link>
+              </div>
             </div>
           </li>
           <li><Link href="/ofertas" className="flex min-h-[40px] items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-promo-ink hover:bg-soft-red"><BoltIcon size={16} /> Ofertas</Link></li>

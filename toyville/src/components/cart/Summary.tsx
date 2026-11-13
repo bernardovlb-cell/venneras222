@@ -16,7 +16,7 @@ export function Summary({ pricing, shippingLabel }: { pricing: PricingResult; sh
       )}
       <div className="flex items-baseline justify-between border-t border-line pt-3">
         <dt className="text-base font-extrabold">Total</dt>
-        <dd className="font-display text-2xl font-extrabold text-primary-dark">{formatBRL(pricing.totalCents)}</dd>
+        <dd className="text-2xl font-extrabold text-primary-dark">{formatBRL(pricing.totalCents)}</dd>
       </div>
     </dl>
   );

@@ -4,22 +4,56 @@ import { requireStaffPage } from "@/server/auth/guards";
 import { db } from "@/server/db/client";
 import { banners, homeSections, pages } from "@/server/db/schema";
 import { PageHead, Panel, Badge, toLocalInput } from "@/components/admin/server-ui";
-import { BannerEditor, SectionEditor, PageEditor } from "@/components/admin/ContentEditors";
+import { BannerEditor, SectionEditor, PageEditor, type BannerRow } from "@/components/admin/ContentEditors";
+import { SettingsForm } from "@/components/admin/SettingsForms";
+import { CampaignBanner, SideBanner } from "@/components/home/Banners";
+import { getSettings } from "@/server/settings";
 
 export default async function ContentPage() {
   await requireStaffPage("content.write");
-  const [bs, secs, pgs] = await Promise.all([
-    db.select().from(banners).orderBy(asc(banners.position)),
+  const [bs, secs, pgs, s] = await Promise.all([
+    db.select().from(banners).orderBy(asc(banners.position), asc(banners.createdAt)),
     db.select().from(homeSections).orderBy(asc(homeSections.position)),
     db.select().from(pages).orderBy(asc(pages.title)),
+    getSettings(),
   ]);
+  const hero = bs.filter((b) => b.placement === "hero"), side = bs.filter((b) => b.placement === "side");
+  const row = (b: (typeof bs)[number]): BannerRow => ({ ...b, startsAt: toLocalInput(b.startsAt), endsAt: toLocalInput(b.endsAt) });
   return (
     <div className="max-w-5xl space-y-6">
-      <PageHead title="Conteúdo e home" subtitle="Banners, ordem das seções da página inicial e textos institucionais." actions={<Link href="/" target="_blank" className="btn btn-outline btn-sm">Ver home</Link>} />
-      <Panel title="Banners do topo">
-        <ul className="divide-y divide-line">{bs.map((b) => <li key={b.id} className="py-2.5"><BannerEditor b={{ ...b, startsAt: toLocalInput(b.startsAt), endsAt: toLocalInput(b.endsAt) }} /></li>)}</ul>
-        <div className="mt-3 border-t border-line pt-3"><BannerEditor /></div>
-        <p className="mt-2 text-xs text-muted">Sem banners ativos, a home mostra uma chamada padrão da marca.</p>
+      <PageHead title="Conteúdo e home" subtitle="Banners, ordem das seções da página inicial e textos institucionais. Fotos de categoria ficam em Categorias; fotos de produto, em cada produto." actions={<Link href="/" target="_blank" className="btn btn-outline btn-sm">Ver home</Link>} />
+      <Panel title="Carrossel principal (banner grande)">
+        <p className="mb-3 text-xs text-muted">Campanhas que giram no banner grande da home. Use ↑ ↓ para ordenar. Sem nenhuma campanha publicada, a loja mostra uma chamada padrão da marca.</p>
+        <ul className="divide-y divide-line">
+          {hero.map((b, i) => (
+            <li key={b.id} className="py-3">
+              <BannerEditor placement="hero" first={i === 0} last={i === hero.length - 1} b={row(b)} preview={<CampaignBanner b={b} />} />
+            </li>
+          ))}
+        </ul>
+        <div className="mt-3 border-t border-line pt-3"><BannerEditor placement="hero" /></div>
+        <div className="mt-4 border-t border-line pt-4">
+          <SettingsForm settingsKey="home">
+            <div className="grid items-end gap-3 sm:grid-cols-2">
+              <label className="block text-sm"><span className="label !text-[13px]">Tempo de cada campanha (segundos)</span>
+                <input name="carouselSeconds" type="number" data-num min={3} max={20} defaultValue={String(s.home.carouselSeconds)} className="field !min-h-[38px] !text-sm" />
+                <span className="hint block">A troca pausa com o mouse em cima, com o teclado e para quem pede menos movimento.</span>
+              </label>
+              <label className="flex items-center gap-2 pb-2 text-sm"><input type="checkbox" name="newsletterEnabled" defaultChecked={s.home.newsletterEnabled} className="size-4" />Mostrar o cadastro de e-mails (newsletter) no rodapé</label>
+            </div>
+          </SettingsForm>
+        </div>
+      </Panel>
+      <Panel title="Banners secundários (ao lado do principal)">
+        <p className="mb-3 text-xs text-muted">Aparecem os <strong>2 primeiros publicados</strong>, ao lado do banner grande (no celular, deslizam embaixo dele). Só publique “Novidades” ou ofertas quando houver produtos para mostrar.</p>
+        <ul className="divide-y divide-line">
+          {side.map((b, i) => (
+            <li key={b.id} className="py-3">
+              <BannerEditor placement="side" first={i === 0} last={i === side.length - 1} b={row(b)} preview={<SideBanner b={b} variant={i + 1} />} />
+            </li>
+          ))}
+        </ul>
+        <div className="mt-3 border-t border-line pt-3"><BannerEditor placement="side" /></div>
       </Panel>
       <Panel title="Seções da página inicial">
         <p className="mb-3 text-xs text-muted">Seções sem conteúdo real (ex.: ofertas sem produtos em promoção, diferenciais não cadastrados) ficam ocultas automaticamente.</p>

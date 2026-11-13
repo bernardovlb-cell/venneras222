@@ -42,11 +42,11 @@ export async function seedBase(db: DB) {
     await db.insert(schema.homeSections).values([
       { type: "hero", position: 0 },
       { type: "categories", title: "Explore por categoria", position: 1 },
-      { type: "best_sellers", title: "Mais vendidos", subtitle: "Os queridinhos da ToyVille", position: 2, config: { limit: 8 } },
-      { type: "flash", title: "Ofertas relâmpago", subtitle: "Por tempo limitado", position: 3, config: { limit: 8 } },
-      { type: "deals", title: "Ofertas e descontos", position: 4, config: { limit: 8 } },
-      { type: "gift_finder", title: "Encontre o presente perfeito", subtitle: "Diga a idade e o orçamento — a gente sugere", position: 5 },
-      { type: "new_arrivals", title: "Lançamentos", position: 6, config: { limit: 8 } },
+      { type: "gift_finder", title: "Encontre o presente perfeito", subtitle: "Diga a idade e o orçamento — a gente sugere", position: 2 },
+      { type: "best_sellers", title: "Mais vendidos", position: 3, config: { limit: 8 } },
+      { type: "new_arrivals", title: "Lançamentos", position: 4, config: { limit: 8 } },
+      { type: "flash", title: "Ofertas relâmpago", subtitle: "Por tempo limitado", position: 5, config: { limit: 8 } },
+      { type: "deals", title: "Ofertas e descontos", position: 6, config: { limit: 8 } },
       { type: "benefits", title: "Por que comprar na ToyVille", position: 7 },
     ]);
   }
@@ -63,4 +63,31 @@ export async function seedBase(db: DB) {
   for (const p of POLICY_DRAFTS) {
     await db.insert(schema.pages).values({ slug: p.slug, title: p.title, body: p.body, status: "pending_review", pendingNotes: p.pendingNotes }).onConflictDoNothing();
   }
+  await seedStarterBanners(db);
 }
+
+/**
+ * Campanhas iniciais da home (texto da marca, sem promoção nem produto inventado), criadas UMA única
+ * vez para o proprietário editar no painel e acrescentar as fotos. A marca em `settings` impede que
+ * voltem a ser criadas depois de editadas ou excluídas. Não cria nada se já houver banner próprio.
+ */
+export const STARTER_BANNERS = [
+  { placement: "hero", position: 0, theme: "blue", title: "Um mundo de brincadeiras espera por você", subtitle: "Brinquedos para todas as idades, dos primeiros meses às brincadeiras em família.", ctaLabel: "Ver brinquedos", linkUrl: "/busca" },
+  { placement: "hero", position: 1, theme: "cream", title: "Cada brinquedo, uma nova descoberta", subtitle: "Montar, imaginar, aprender e jogar junto: escolha pelo tipo de brincadeira.", ctaLabel: "Explorar categorias", linkUrl: "/categorias" },
+  { placement: "side", position: 0, theme: "yellow", title: "Encontre o presente perfeito", subtitle: "Sugestões por idade e orçamento.", ctaLabel: "Abrir o guia", linkUrl: "/presentes" },
+  { placement: "side", position: 1, theme: "green", title: "Dúvidas na escolha?", subtitle: "Fale com a ToyVille antes de comprar.", ctaLabel: "Abrir atendimento", linkUrl: "/atendimento" },
+  // Pronto para ativar quando houver produtos cadastrados (não é exibido antes disso).
+  { placement: "side", position: 2, theme: "blue", title: "Novidades", subtitle: "Os brinquedos que acabaram de chegar.", ctaLabel: "Ver novidades", linkUrl: "/busca?ordem=newest", isActive: false },
+] as const;
+
+async function seedStarterBanners(db: DB) {
+  const FLAG = "_seed_banners_v3";
+  const done = (await db.select({ key: schema.settings.key }).from(schema.settings).where(sql`${schema.settings.key} = ${FLAG}`)).length > 0;
+  if (done) return;
+  const own = (await db.select({ n: sql<number>`count(*)::int` }).from(schema.banners).where(sql`${schema.banners.isDemo} = false`))[0].n;
+  if (own === 0) {
+    await db.insert(schema.banners).values(STARTER_BANNERS.map((b) => ({ ...b, textPosition: "left", imageMode: "cutout", isActive: "isActive" in b ? b.isActive : true })));
+  }
+  await db.insert(schema.settings).values({ key: FLAG, value: true }).onConflictDoNothing();
+}
+

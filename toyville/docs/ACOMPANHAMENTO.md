@@ -1,6 +1,6 @@
 # Acompanhamento do projeto ToyVille
 
-Atualizado em 13/11/2026 (3ª rodada: refinamento visual — ver `docs/DIRECAO-DE-ARTE.md`).
+Atualizado em 13/11/2026 (4ª rodada: ToyVille 3.0 — home fotográfica, banners editáveis, newsletter; ver `docs/DIRECAO-DE-ARTE.md`).
 
 ## Funcionalidades concluídas (interface + regra + banco + testes)
 
@@ -36,9 +36,13 @@ Atualizado em 13/11/2026 (3ª rodada: refinamento visual — ver `docs/DIRECAO-D
 
 - Recuperação de carrinho: contato gravado só com consentimento no checkout (desmarcar apaga), um único lembrete por carrinho após o prazo configurado, rotina agendada protegida; **desativada por padrão** (Configurações > Checkout).
 
-**Identidade visual** — linha "varejo profissional" (`docs/DIRECAO-DE-ARTE.md`; a proposta ilustrada anterior foi rejeitada por parecer gerada por IA)
-- Home: grade de banners (marca ou campanhas do painel + atalhos para guia de presentes e ofertas/novidades), compra por idade, categorias com ícones de traço (ou foto do painel), vitrines com títulos simples, guia de presentes por toques, aviso de "Catálogo em cadastro" enquanto não há produtos.
-- Cabeçalho com busca em destaque e menu "Todas as categorias" (a barra não quebra mais em duas linhas); menu do celular com atalhos e ícones; cards de produto com borda, selo de desconto retangular e espaço neutro de "Foto em breve"; tipografia única (Nunito).
+**Home e identidade visual — ToyVille 3.0** (`docs/DIRECAO-DE-ARTE.md`)
+- Banners: carrossel principal (rotação automática configurável, pausa com mouse/teclado/fora da tela/movimento reduzido, botão de pausar, setas, indicadores, toque; para de girar depois de interação manual) + 2 banners secundários (~65/35 no desktop; carrossel próprio no celular). Texto à esquerda, à direita ou sobre a foto; foto recortada ou de ambiente; imagem própria para celular; agendamento; ordenação; prévia. Tudo pelo painel.
+- Categorias com foto recortada (foto do painel > foto de produto da categoria > substituto), todas acessíveis, grade expansível e carrossel no celular; página `/categorias`.
+- Compre por idade (cartões numerados; carrossel no celular); guia de presentes em painel único com resumo das escolhas, limpar, validação e indicação de carregamento.
+- Vitrines com composições diferentes (destaque + grade, carrossel, painéis de oferta) e card editorial (foto, nome, preço; selos só com critério real; ação contextual). Estado vazio único enquanto não há produtos.
+- Seção institucional só com dados verificados; encerramento com o slogan da loja; rodapé azul com base legal clara, newsletter (consentimento, validação, limite de tentativas, lista no painel) e redes sociais (só as configuradas).
+- Design tokens centralizados; títulos em Fredoka, textos em Nunito.
 
 ## Em implementação / parcial
 
@@ -47,6 +51,7 @@ Atualizado em 13/11/2026 (3ª rodada: refinamento visual — ver `docs/DIRECAO-D
 
 ## Pendências que dependem do proprietário
 
+0. **Fotos**: campanhas (banner principal e secundários), categorias e produtos — é o que falta para a home ficar de fato fotográfica. Fotos com crianças só com autorização por escrito.
 1. **Credenciais do Mercado Pago** (teste e produção), chave Pix cadastrada e homologação (`docs/MERCADO_PAGO.md`).
 2. **Escolha da hospedagem** (recomendação em `docs/HOSPEDAGEM.md`) e domínio.
 3. **Endereço/horário de retirada** e/ou regiões, valores e prazos de entrega; decisão sobre Correios/transportadora.
@@ -83,27 +88,33 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Requisição 404 de `/favicon.ico` (erro no console) → ícone vazio declarado até a aprovação do favicon.
 - Ordem de títulos nas listagens (h1 → h3) e falta de meta description em produtos sem resumo → corrigidos.
 - Refinamento visual: grid do hero crescia além da tela no celular (título e botões cortados, sem rolagem horizontal aparente) → colunas `minmax(0,1fr)` e novo teste E2E que procura conteúdo cortado; barra de categorias do desktop quebrava em duas linhas → menu “Todas as categorias”; duas caixas de busca na mesma página repetiam o id `busca` → id único; “Os queridinhos da ToyVille” aparecia mesmo sem vendas → subtítulo de popularidade só com vendas reais; a loja já exibia foto de categoria, mas o painel não permitia enviá-la → envio, troca e remoção em Painel > Categorias; contraste de rótulos conferido (≥ 4,5:1).
+- ToyVille 3.0: rodapé dizia “Pagamentos processados pelo Mercado Pago” mesmo sem o Mercado Pago configurado → só aparece quando está configurado; redes sociais apareciam com qualquer texto no campo → só com URL `https://`; rodapé e cabeçalho tinham duas navegações com o mesmo nome acessível → nomes únicos; “404” amarelo sobre creme sem contraste → azul; slogan repetido duas vezes seguidas no fim da home → rodapé usa a descrição da loja.
 
-## Testes executados (13/11/2026, após o refinamento visual)
+## Testes executados (13/11/2026, ToyVille 3.0)
 
 | Verificação | Resultado |
 |---|---|
 | `npm run typecheck` | sem erros |
 | `npm run lint` | sem erros e sem avisos |
 | `npm run build` | concluído |
-| `npm test` — 84 testes (unidade + integração com PostgreSQL real) | 84 passaram |
-| `npm run test:e2e` — 26 cenários no navegador (build de produção) | 26 passaram |
-| Lighthouse 13 (celular, rede lenta simulada, servidor local, com dados de demonstração) | Início: desempenho mediana 99 em 5 execuções (93 na primeira, servidor frio), TBT 50–140 ms, LCP 0,8 s, CLS 0. Guia de presentes 96, categoria 100, produto 99. Acessibilidade 100 e boas práticas 100 em todas. SEO 100 (produto [DEMO] fica não indexável de propósito) |
+| `npm test` — 99 testes (unidade + integração com PostgreSQL real) | 99 passaram |
+| `npm run test:e2e` — 35 cenários no navegador (build de produção) | 35 passaram |
+| Migração `0003_home_v3` | aplicada em banco no mesmo estado da produção (seções reordenadas só porque a ordem era a original), em banco vazio e no banco de testes |
 | axe-core (WCAG 2 A/AA + boas práticas), celular e desktop | início, presentes, resultado do guia, categoria, busca e produto sem violações |
-| Revisão visual com capturas (iPhone SE, iPhone 13, Galaxy S9+, 1440 px) | home com e sem campanhas, com e sem produtos; menus; guia; categoria; produto |
+| Lighthouse 13 (celular, rede lenta simulada, servidor local, sem produtos — como a produção hoje) | Início: desempenho 100 em 3 execuções (LCP 0,9–1,0 s, CLS 0, TBT 40–60 ms); categorias 99; presentes 100. Acessibilidade, boas práticas e SEO: 100 |
+| Larguras 375, 390, 768, 1024 e 1440 px | sem rolagem horizontal; nenhum texto/botão cortado (iPhone SE, iPhone 13, Galaxy S9+) |
 
-> Lighthouse local não mede a latência real da hospedagem nem imagens reais de produtos. Repetir em produção após o catálogo real (PageSpeed Insights / dados de campo do Chrome).
+> Lighthouse local não mede a latência real da hospedagem nem fotos reais. Repetir em produção quando houver fotos.
+
+Novos nesta rodada — integração: campanhas iniciais criadas uma única vez, posição do texto/tipo de foto/ordenação dos banners, período de publicação, tempo do carrossel, prioridade da imagem de categoria (nunca de outra categoria, de rascunho ou de demonstração), selo “Novo”, descontos só reais, newsletter (consentimento, e-mail inválido, duplicidade, desativação, remoção, exclusão de conta). E2E: carrossel (gira, pausa com mouse e teclado, para após interação, retoma, movimento reduzido, slides inertes), proporção ~65/35 e alturas iguais, secundários/categorias/idades em carrossel no celular, campanha com foto criada/despublicada pelo painel, banner secundário reordenado, todas as categorias acessíveis, filtro por idade, guia (validação, resumo, limpar), newsletter até o banco e o painel, estado vazio único sem preço nem produto.
 
 Cobertura por tema: motor de preços e cupons (38 casos), assinatura do webhook, status do Mercado Pago, parser de importação; criação de pedido, snapshot de preço, idempotência, estoque insuficiente, **concorrência na última unidade**, **limite de cupom sob concorrência**, frete não configurado, entrega local por CEP, frete grátis; pagamento aprovado/pendente/recusado/divergente/duplicado/após cancelamento, expiração com reconciliação, reembolso, separação/entrega, controle de acesso ao pedido; webhook (assinatura válida, inválida, adulterada, ausente, repetida, falha do provedor, tópico ignorado); importação (criação, atualização segura, tudo-ou-nada, SKU de outro produto), estoque abaixo do reservado, variações, arquivamento, promoções inválidas, papéis e permissões, último proprietário, senhas, avaliações (pendente, duplicada, spam), anonimização LGPD.
 E2E (novos nesta rodada): nada cortado pela borda no celular (home, presentes, categoria), guia de presentes por toques até as sugestões e foto de categoria enviada no painel aparecendo na home.
 E2E: login da equipe (erro e sucesso), painel exige login, cliente recebe 404 no painel, configurar retirada, bloqueio de Correios sem integração, cadastro e publicação de produto, importação CSV com erro e com sucesso, busca com erro de digitação, rascunho com 404, carrinho/quantidade/cupom, limite de estoque, checkout de visitante até o Mercado Pago (simulado), URL de retorno falsificada não marca pago, webhook assinado/forjado/repetido, separação e retirada, cron protegido, cadastro sem perder dados, área do cliente, pedido alheio inacessível, ausência de rolagem horizontal em 375 px e 1366 px, sitemap e JSON-LD.
 
-**Não executado**: pagamentos no ambiente de teste real do Mercado Pago (sem rede para `api.mercadopago.com` e sem credenciais neste ambiente); envio real de e-mail; upload para Supabase Storage; Core Web Vitals em produção com dados reais; testes em Safari/Firefox reais (só Chromium, incluindo emulação de iPhone).
+**Limitação conhecida (anterior, não corrigida)**: com `STORAGE_DRIVER=local` em modo produção (`next start`), imagens enviadas depois que o servidor subiu não são servidas até reiniciar. Não afeta a publicação na Vercel, que usa o Supabase Storage.
+
+**Não executado**: envio de imagens ao Supabase Storage a partir deste ambiente (as imagens dos testes ficam em disco); pagamentos no ambiente de teste real do Mercado Pago (sem rede para `api.mercadopago.com` e sem credenciais neste ambiente); envio real de e-mail; upload para Supabase Storage; Core Web Vitals em produção com dados reais; testes em Safari/Firefox reais (só Chromium, incluindo emulação de iPhone).
 
 ## Próximos passos sugeridos
 

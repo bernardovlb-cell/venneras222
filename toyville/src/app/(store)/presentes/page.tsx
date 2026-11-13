@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { listProducts, getFeaturedCategories } from "@/server/services/catalog";
 import { myFavoriteIds } from "@/server/services/favorites";
-import { BUDGETS } from "@/components/gift/GiftFinderForm";
+import { BUDGETS } from "@/lib/gift";
 import { GiftFinderPanel } from "@/components/gift/GiftFinderPanel";
 import { ProductGrid } from "@/components/product/ProductCard";
 import { EmptyState } from "@/components/ui/States";
@@ -30,7 +30,7 @@ export default async function GiftFinderPage({ searchParams }: { searchParams: P
 
   return (
     <div className="container-tv py-6">
-      <GiftFinderPanel headingLevel="h1" title="Encontre o presente perfeito"
+      <GiftFinderPanel framed headingLevel="h1" title="Encontre o presente perfeito"
         subtitle="Conte a idade, o orçamento e o que a criança curte. Sugerimos brinquedos disponíveis na loja."
         categories={cats} defaults={{ idade, orcamento, categoria }} />
 

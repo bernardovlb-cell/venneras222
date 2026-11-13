@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Fredoka, Nunito } from "next/font/google";
 import { getSettings } from "@/server/settings";
 import { env } from "@/server/env";
 import "./globals.css";
 
+// Títulos: Fredoka (arredondada, licença SIL OFL). Textos, preços e formulários: Nunito.
+const fredoka = Fredoka({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-fredoka", display: "swap" });
 const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600", "700", "800", "900"], variable: "--font-nunito", display: "swap" });
 
 export const dynamic = "force-dynamic";
@@ -30,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Cores configuráveis no painel (validadas como #RRGGBB no servidor antes de salvar).
   const tokens = `:root{--tv-primary:${brand.primary};--tv-primary-dark:${brand.primaryDark};--tv-accent:${brand.accent};--tv-promo:${brand.promo};--tv-success:${brand.success};--tv-bg:${brand.background}}`;
   return (
-    <html lang="pt-BR" className={nunito.variable}>
+    <html lang="pt-BR" className={`${fredoka.variable} ${nunito.variable}`}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: tokens }} />
       </head>

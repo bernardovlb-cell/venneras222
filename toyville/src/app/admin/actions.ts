@@ -15,6 +15,7 @@ import { moderateReview } from "@/server/services/reviews";
 import { replyTicket } from "@/server/services/support";
 import { saveSettings, settingsSchemas, type SettingsKey } from "@/server/settings";
 import { storeImage } from "@/server/storage";
+import { removeNewsletterSubscriber } from "@/server/services/newsletter";
 import { audit } from "@/server/audit";
 import { db } from "@/server/db/client";
 import { banners, coupons, externalListings, promotions, supportTickets } from "@/server/db/schema";
@@ -256,8 +257,14 @@ export async function saveBannerAction(_: unknown, fd: FormData): R {
     if (f1 instanceof File && f1.size) imgs.imageUrl = (await storeImage(f1, "banners")).url;
     if (f2 instanceof File && f2.size) imgs.mobileImageUrl = (await storeImage(f2, "banners")).url;
     if (bool(fd, "removeImage")) { imgs.imageUrl = null; imgs.mobileImageUrl = null; }
-    await A.saveBanner({ placement: str(fd, "placement") || "hero", title: str(fd, "title"), subtitle: str(fd, "subtitle"), linkUrl: str(fd, "linkUrl"), ctaLabel: str(fd, "ctaLabel"), theme: str(fd, "theme") || "blue", position: str(fd, "position") || "0", startsAt: str(fd, "startsAt"), endsAt: str(fd, "endsAt"), isActive: bool(fd, "isActive") }, imgs, u.id, str(fd, "id") || undefined);
+    await A.saveBanner({ placement: str(fd, "placement") || "hero", title: str(fd, "title"), subtitle: str(fd, "subtitle"), linkUrl: str(fd, "linkUrl"), ctaLabel: str(fd, "ctaLabel"), theme: str(fd, "theme") || "blue", textPosition: str(fd, "textPosition") || "left", imageMode: str(fd, "imageMode") || "cover", position: str(fd, "position") || "0", startsAt: str(fd, "startsAt"), endsAt: str(fd, "endsAt"), isActive: bool(fd, "isActive") }, imgs, u.id, str(fd, "id") || undefined);
   }, "Banner salvo.");
+}
+export async function moveBannerAction(id: string, direction: "up" | "down"): R {
+  return run(async () => { const u = await requirePermission("content.write"); await A.moveBanner(id, direction, u.id); }, "Ordem atualizada.");
+}
+export async function removeNewsletterSubscriberAction(id: string): R {
+  return run(async () => { const u = await requirePermission("support.handle"); await removeNewsletterSubscriber(id, u.id); }, "Inscrição removida.");
 }
 export async function saveHomeSectionAction(_: unknown, fd: FormData): R {
   return run(async () => {

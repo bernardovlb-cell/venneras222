@@ -67,6 +67,12 @@ export const settingsSchemas = {
     tiktok: z.string().max(200).default(""),
     youtube: z.string().max(200).default(""),
   }),
+  home: z.object({
+    // Tempo de cada campanha no carrossel principal (segundos). Um único lugar para ajustar.
+    carouselSeconds: z.number().int().min(3).max(20).default(6),
+    // Cadastro de e-mails no rodapé (só guarda o e-mail com consentimento; nenhum envio é feito pelo site).
+    newsletterEnabled: z.boolean().default(true),
+  }),
   seo: z.object({
     defaultTitle: z.string().max(70).default("ToyVille — Loja de brinquedos"),
     defaultDescription: z.string().max(170).default("Brinquedos educativos, pelúcias, bonecas, jogos e muito mais. Encontre o presente perfeito por idade e orçamento."),
