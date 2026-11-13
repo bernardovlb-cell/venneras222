@@ -16,15 +16,27 @@ export function Notice({ kind = "info", children }: { kind?: "info" | "warn" | "
   return <div role={kind === "error" ? "alert" : "status"} className={`rounded-2xl px-4 py-3 text-sm font-semibold ${cls}`}>{children}</div>;
 }
 
-export function SectionTitle({ title, subtitle, href, linkLabel = "Ver todos" }: { title: string; subtitle?: string | null; href?: string; linkLabel?: string }) {
+export function SectionTitle({ title, subtitle, href, linkLabel = "Ver todos", eyebrow, light = false }: {
+  title: string; subtitle?: string | null; href?: string; linkLabel?: string; eyebrow?: string; light?: boolean;
+}) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
-      <div>
-        <h2 className="text-2xl font-extrabold leading-tight text-primary-dark sm:text-3xl">{title}</h2>
-        <svg aria-hidden viewBox="0 0 120 10" className="mt-1 h-2.5 w-24 text-accent"><path d="M2 6c12-5 22 3 34-1s22-4 34 0 22 3 34-1 12-3 14-2" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" /></svg>
-        {subtitle && <p className="mt-1 text-sm text-muted sm:text-base">{subtitle}</p>}
+    <div className="mb-5 flex items-end justify-between gap-4 sm:mb-7">
+      <div className="min-w-0">
+        {eyebrow && (
+          <p className={`eyebrow ${light ? "!text-[#ffe08a]" : ""}`}>
+            <svg aria-hidden viewBox="0 0 20 20" className="size-3.5"><path d="M10 1q1.6 7.4 9 9-7.4 1.6-9 9-1.6-7.4-9-9 7.4-1.6 9-9Z" fill="currentColor" /></svg>
+            {eyebrow}
+          </p>
+        )}
+        <h2 className={`text-[1.75rem] font-extrabold leading-[1.05] sm:text-[2.35rem] ${light ? "text-white" : "text-primary-dark"}`}>{title}</h2>
+        {subtitle && <p className={`mt-1.5 text-[15px] sm:text-base ${light ? "text-white/85" : "text-muted"}`}>{subtitle}</p>}
       </div>
-      {href && <Link href={href} className="shrink-0 text-sm font-extrabold text-primary hover:underline">{linkLabel} →</Link>}
+      {href && (
+        <Link href={href} aria-label={`${linkLabel}: ${title}`} className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-white py-1.5 pl-3.5 pr-1.5 text-sm font-extrabold text-primary shadow-card transition hover:bg-soft-blue">
+          <span className="hidden sm:inline">{linkLabel}</span><span className="sm:hidden">Ver</span>
+          <span aria-hidden className="grid size-7 place-items-center rounded-full bg-primary text-white transition group-hover:translate-x-0.5">→</span>
+        </Link>
+      )}
     </div>
   );
 }

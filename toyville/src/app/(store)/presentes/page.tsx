@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { listProducts, getFeaturedCategories } from "@/server/services/catalog";
 import { myFavoriteIds } from "@/server/services/favorites";
-import { GiftFinderForm, BUDGETS } from "@/components/gift/GiftFinderForm";
+import { BUDGETS } from "@/components/gift/GiftFinderForm";
+import { GiftFinderPanel } from "@/components/gift/GiftFinderPanel";
 import { ProductGrid } from "@/components/product/ProductCard";
 import { EmptyState } from "@/components/ui/States";
 import { ageBand } from "@/lib/age";
-import { GiftIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Encontre o presente perfeito", description: "Sugestões de brinquedos por idade, orçamento e interesse." };
 
@@ -30,18 +30,13 @@ export default async function GiftFinderPage({ searchParams }: { searchParams: P
 
   return (
     <div className="container-tv py-6">
-      <div className="rounded-[2rem] bg-accent p-5 sm:p-8">
-        <div className="flex items-center gap-3">
-          <span className="grid size-12 place-items-center rounded-2xl bg-white text-primary"><GiftIcon size={28} /></span>
-          <h1 className="text-3xl font-extrabold sm:text-4xl">Encontre o presente perfeito</h1>
-        </div>
-        <p className="mt-2 font-semibold text-ink/75">Conte a idade, o orçamento e o que a criança curte. Sugerimos brinquedos disponíveis na loja.</p>
-        <div className="mt-5"><GiftFinderForm categories={cats} defaults={{ idade, orcamento, categoria }} /></div>
-      </div>
+      <GiftFinderPanel headingLevel="h1" title="Encontre o presente perfeito"
+        subtitle="Conte a idade, o orçamento e o que a criança curte. Sugerimos brinquedos disponíveis na loja."
+        categories={cats} defaults={{ idade, orcamento, categoria }} />
 
       {result && (
         <section className="mt-8" aria-live="polite">
-          <h2 className="mb-4 text-2xl font-extrabold text-primary-dark">
+          <h2 className="mb-5 text-[1.6rem] font-extrabold leading-tight text-primary-dark sm:text-3xl">
             {result.total > 0 ? `${result.total} ${result.total === 1 ? "sugestão" : "sugestões"} para ${band!.label.toLowerCase()}${budget ? `, ${budget.label.toLowerCase()}` : ""}` : "Sem sugestões para essa combinação"}
           </h2>
           {result.total === 0 ? (

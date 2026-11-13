@@ -52,6 +52,30 @@
 @keyframes slide-up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes slide-left { from { transform: translateX(-100%); } to { transform: none; } }
 
+/* ---- Movimento da "vila" (ilustrações). Desligado por prefers-reduced-motion (regra abaixo). ---- */
+@keyframes tv-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes tv-drift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(16px); } }
+@keyframes tv-twinkle { 0%, 100% { transform: scale(.65) rotate(0deg); opacity: .55; } 50% { transform: scale(1) rotate(20deg); opacity: 1; } }
+@keyframes tv-flag { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-7deg) scaleX(.9); } }
+@keyframes tv-flame { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.78); } }
+@keyframes tv-reveal { from { opacity: 0; transform: translateY(28px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes tv-wiggle { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-6deg) scale(1.06); } 60% { transform: rotate(4deg) scale(1.06); } }
+.tv-float, .tv-drift, .tv-twinkle, .tv-flag, .tv-flame { transform-box: fill-box; transform-origin: center; }
+.tv-float { animation: tv-float 6s ease-in-out infinite; }
+.tv-drift { animation: tv-drift 14s ease-in-out infinite; }
+.tv-twinkle { animation: tv-twinkle 3.2s ease-in-out infinite; }
+.tv-flag { transform-origin: left center; animation: tv-flag 2.4s ease-in-out infinite; }
+.tv-flame { transform-origin: top center; animation: tv-flame .35s ease-in-out infinite; }
+.tv-delay-1 { animation-delay: -1.5s; } .tv-delay-2 { animation-delay: -3s; } .tv-delay-3 { animation-delay: -4.5s; }
+.no-ground .tv-ground { display: none; }
+
+/* Entrada das seções ligada à rolagem — só em navegadores com suporte; nos demais o conteúdo aparece normalmente. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: tv-reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 32%; }
+  }
+}
+
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { background: var(--tv-bg); color: var(--tv-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
@@ -83,6 +107,33 @@ h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0
   .btn-ghost { color: var(--tv-ink); }
   .btn-ghost:hover:not(:disabled) { background: rgba(31, 79, 209, .08); }
   .btn-sm { min-height: 36px; padding: .4rem .9rem; font-size: .85rem; }
+
+  .btn-lg { min-height: 54px; padding: .8rem 1.6rem; font-size: 1.05rem; }
+  .btn-accent:hover:not(:disabled), .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+
+  /* Sobretítulo de seção */
+  .eyebrow { display: inline-flex; align-items: center; gap: .4rem; margin-bottom: .35rem; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--tv-primary); }
+  /* Marca-texto amarelo em palavras de destaque */
+  .tv-marker { background: linear-gradient(transparent 58%, var(--tv-accent) 58%, var(--tv-accent) 88%, transparent 88%); padding-inline: .08em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  /* Toldo de loja de brinquedos (festonê listrado) */
+  .tv-awning { height: 16px; background: repeating-linear-gradient(90deg, var(--tv-primary) 0 24px, #cddcff 24px 48px);
+    -webkit-mask: linear-gradient(#000 0 0) 0 0 / 100% 5px no-repeat, radial-gradient(circle at 12px 5px, #000 11.5px, transparent 12px) 0 0 / 24px 16px repeat-x;
+            mask: linear-gradient(#000 0 0) 0 0 / 100% 5px no-repeat, radial-gradient(circle at 12px 5px, #000 11.5px, transparent 12px) 0 0 / 24px 16px repeat-x;
+    filter: drop-shadow(0 3px 0 rgba(23, 58, 158, .14)); }
+  @media (max-width: 1023px) { .tv-awning { height: 12px; } }
+  /* Fundo do hero: creme com bolhas de cor e confetes */
+  .tv-hero-bg { background:
+      radial-gradient(circle at 8% 22%, rgba(255, 194, 26, .22) 0 9rem, transparent 9.1rem),
+      radial-gradient(circle at 92% 12%, rgba(31, 79, 209, .07) 0 14rem, transparent 14.1rem),
+      radial-gradient(circle at 70% 96%, rgba(46, 155, 46, .10) 0 10rem, transparent 10.1rem),
+      radial-gradient(circle, rgba(31, 79, 209, .16) 1.6px, transparent 2px) 0 0 / 28px 28px,
+      var(--tv-bg); }
+  /* Estrelas discretas em painéis coloridos */
+  .tv-stars { background-image: radial-gradient(circle, rgba(255, 255, 255, .22) 1.4px, transparent 1.8px), radial-gradient(circle, rgba(255, 255, 255, .12) 1px, transparent 1.4px); background-size: 34px 34px, 21px 21px; background-position: 0 0, 10px 14px; }
+  /* Selo de desconto (adesivo) */
+  .tv-sticker { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 9999px; background: var(--tv-promo); color: #fff; font-family: var(--font-display); font-weight: 800; font-size: .82rem; line-height: 1; transform: rotate(-12deg); box-shadow: 0 3px 0 #a3161b; }
+  @media (min-width: 640px) { .tv-sticker { width: 3.1rem; height: 3.1rem; font-size: .95rem; } }
+  .group:hover .tv-wiggle { animation: tv-wiggle .6s ease-in-out; }
 
   .card { background: var(--tv-surface); border-radius: 1.25rem; box-shadow: var(--shadow-card); }
   .field { display: block; width: 100%; min-height: 46px; padding: .6rem .9rem; border-radius: .9rem; border: 1.5px solid var(--tv-line); background: #fff; color: var(--tv-ink); font-size: 1rem; transition: border-color .15s, box-shadow .15s; }

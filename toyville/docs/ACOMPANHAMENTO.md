@@ -1,6 +1,6 @@
 # Acompanhamento do projeto ToyVille
 
-Atualizado em 13/11/2026 (2ª rodada: auditoria Lighthouse, recuperação de carrinho, acessibilidade).
+Atualizado em 13/11/2026 (3ª rodada: refinamento visual “ToyVille 2.0” — ver `docs/DIRECAO-DE-ARTE.md`).
 
 ## Funcionalidades concluídas (interface + regra + banco + testes)
 
@@ -36,6 +36,13 @@ Atualizado em 13/11/2026 (2ª rodada: auditoria Lighthouse, recuperação de car
 
 - Recuperação de carrinho: contato gravado só com consentimento no checkout (desmarcar apaga), um único lembrete por carrinho após o prazo configurado, rotina agendada protegida; **desativada por padrão** (Configurações > Checkout).
 
+**Identidade visual (ToyVille 2.0)** — conceito “a vila dos brinquedos” (`docs/DIRECAO-DE-ARTE.md`)
+- Ilustrações próprias em SVG no estilo de brinquedo 3D da logo (11 brinquedos + cena do castelo no hero); categorias ganham ilustração automática pelo nome e usam a foto enviada no painel quando houver.
+- Home: hero com cena animada e atalhos por idade; campanhas cadastradas viram slides com a mesma composição; categorias como “casinhas” (rua deslizante no celular); vitrines com sobretítulos, relâmpago com contagem e layout próprio para poucos itens; guia de presentes por toques (idade ilustrada, orçamento e interesse); aviso de “vitrine em montagem” enquanto não há produtos.
+- Cabeçalho: toldo festonado, busca em destaque, menu “Todas as categorias” com ilustrações (a barra não quebra mais em duas linhas), carrinho destacado; menu do celular com atalhos e ilustrações.
+- Cards de produto: vitrine com fundo suave (foto em multiply), selo de desconto, marca, faixa etária, preço com hierarquia; rodapé com silhueta da vila; páginas de categoria com cabeçalho ilustrado.
+- Movimento: flutuação das ilustrações e entrada das seções por rolagem (CSS, sem JavaScript), desligados com “reduzir movimento”.
+
 ## Em implementação / parcial
 
 - E-mail transacional: implementado (Resend) e registrado na caixa de saída; não testado contra o serviço real.
@@ -51,7 +58,7 @@ Atualizado em 13/11/2026 (2ª rodada: auditoria Lighthouse, recuperação de car
 6. **Benefícios reais** da loja para a seção de diferenciais.
 7. **Catálogo real** (planilha de importação + fotos próprias) e remoção dos dados de demonstração (`npm run db:purge-demo`).
 8. **Emissor de NF-e** utilizado (para planejar a integração).
-9. **Aprovação da proposta de favicon** (`docs/MARCA.md`).
+9. **Aprovação da proposta de favicon** (`docs/MARCA.md`) e da nova direção de arte (`docs/DIRECAO-DE-ARTE.md`).
 10. Provedor de e-mail e IDs de GA4/GTM/Meta Pixel, se desejar.
 
 ## Dependências externas
@@ -78,21 +85,25 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Contraste insuficiente: selo de desconto vermelho sobre rosa (~4,4:1) e “Você economiza” em verde (~3,6:1) → tons escurecidos (≥ 6:1).
 - Requisição 404 de `/favicon.ico` (erro no console) → ícone vazio declarado até a aprovação do favicon.
 - Ordem de títulos nas listagens (h1 → h3) e falta de meta description em produtos sem resumo → corrigidos.
+- Refinamento visual: grid do hero crescia além da tela no celular (título e botões cortados, sem rolagem horizontal aparente) → colunas `minmax(0,1fr)` e novo teste E2E que procura conteúdo cortado; barra de categorias do desktop quebrava em duas linhas → menu “Todas as categorias”; fundo translúcido do cabeçalho revelava o retângulo branco da logo → fundo sólido; duas caixas de busca na mesma página repetiam o id `busca` → id único; sobretítulos amarelos sobre azul/vermelho (3,1–4,2:1) e marca do card (4,4:1) → tons com contraste ≥ 4,5:1; ilustrações em linha triplicavam o HTML da home → arquivos SVG estáticos em cache (`npm run art`, com teste de sincronia).
 
-## Testes executados (13/11/2026)
+## Testes executados (13/11/2026, após o refinamento visual)
 
 | Verificação | Resultado |
 |---|---|
 | `npm run typecheck` | sem erros |
 | `npm run lint` | sem erros e sem avisos |
 | `npm run build` | concluído |
-| `npm test` — 83 testes (unidade + integração com PostgreSQL real) | 83 passaram |
-| `npm run test:e2e` — 22 cenários no navegador (build de produção) | 22 passaram |
-| Lighthouse 13 (celular, rede lenta simulada, servidor local) | Desempenho 99–100 · Acessibilidade 100 · Boas práticas 100 · SEO 100 em início, produto, categoria, ofertas e guia de presentes. LCP 0,6–0,9 s, CLS ≤ 0,003. Exceções intencionais: busca e produtos [DEMO] marcados como não indexáveis |
+| `npm test` — 95 testes (unidade + integração com PostgreSQL real + sincronia das ilustrações) | 95 passaram |
+| `npm run test:e2e` — 25 cenários no navegador (build de produção) | 25 passaram |
+| Lighthouse 13 (celular, rede lenta simulada, servidor local, com dados de demonstração) | Início: desempenho mediana 99 em 5 execuções (93 na primeira, servidor frio), TBT 50–140 ms, LCP 0,8 s, CLS 0. Guia de presentes 96, categoria 100, produto 99. Acessibilidade 100 e boas práticas 100 em todas. SEO 100 (produto [DEMO] fica não indexável de propósito) |
+| axe-core (WCAG 2 A/AA + boas práticas), celular e desktop | início, presentes, resultado do guia, categoria, busca e produto sem violações |
+| Revisão visual com capturas (iPhone SE, iPhone 13, Galaxy S9+, 1440 px) | home com e sem campanhas, com e sem produtos; menus; guia; categoria; produto |
 
 > Lighthouse local não mede a latência real da hospedagem nem imagens reais de produtos. Repetir em produção após o catálogo real (PageSpeed Insights / dados de campo do Chrome).
 
 Cobertura por tema: motor de preços e cupons (38 casos), assinatura do webhook, status do Mercado Pago, parser de importação; criação de pedido, snapshot de preço, idempotência, estoque insuficiente, **concorrência na última unidade**, **limite de cupom sob concorrência**, frete não configurado, entrega local por CEP, frete grátis; pagamento aprovado/pendente/recusado/divergente/duplicado/após cancelamento, expiração com reconciliação, reembolso, separação/entrega, controle de acesso ao pedido; webhook (assinatura válida, inválida, adulterada, ausente, repetida, falha do provedor, tópico ignorado); importação (criação, atualização segura, tudo-ou-nada, SKU de outro produto), estoque abaixo do reservado, variações, arquivamento, promoções inválidas, papéis e permissões, último proprietário, senhas, avaliações (pendente, duplicada, spam), anonimização LGPD.
+E2E (novos nesta rodada): nada cortado pela borda no celular (home, presentes, categoria) e guia de presentes por toques até as sugestões.
 E2E: login da equipe (erro e sucesso), painel exige login, cliente recebe 404 no painel, configurar retirada, bloqueio de Correios sem integração, cadastro e publicação de produto, importação CSV com erro e com sucesso, busca com erro de digitação, rascunho com 404, carrinho/quantidade/cupom, limite de estoque, checkout de visitante até o Mercado Pago (simulado), URL de retorno falsificada não marca pago, webhook assinado/forjado/repetido, separação e retirada, cron protegido, cadastro sem perder dados, área do cliente, pedido alheio inacessível, ausência de rolagem horizontal em 375 px e 1366 px, sitemap e JSON-LD.
 
 **Não executado**: pagamentos no ambiente de teste real do Mercado Pago (sem rede para `api.mercadopago.com` e sem credenciais neste ambiente); envio real de e-mail; upload para Supabase Storage; Core Web Vitals em produção com dados reais; testes em Safari/Firefox reais (só Chromium, incluindo emulação de iPhone).
