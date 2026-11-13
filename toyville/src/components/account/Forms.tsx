@@ -7,6 +7,7 @@ import {
   saveAddressAction, deleteAccountAction, openTicketAction, replyTicketAction,
 } from "@/app/actions/account";
 import { Notice } from "../ui/States";
+import { useSubmit } from "../ui/useSubmit";
 
 type S = ActionResult<unknown> | null;
 const fe = (s: S, k: string) => (s && !s.ok ? s.fieldErrors?.[k] : undefined);
@@ -47,8 +48,9 @@ function PasswordField({ state, name = "password", label = "Senha", autoComplete
 
 export function LoginForm({ next, staff = false, action = loginAction }: { next?: string; staff?: boolean; action?: typeof loginAction }) {
   const [state, act, pending] = useActionState(action, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <input type="hidden" name="next" value={next ?? ""} />
       <Feedback state={state} />
       <Field label="E-mail" name="email" type="email" autoComplete="email" inputMode="email" required state={state} />
@@ -61,8 +63,9 @@ export function LoginForm({ next, staff = false, action = loginAction }: { next?
 
 export function RegisterForm({ next }: { next?: string }) {
   const [state, act, pending] = useActionState(registerAction, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <input type="hidden" name="next" value={next ?? ""} />
       <Feedback state={state} />
       <Field label="Nome completo" name="name" autoComplete="name" required state={state} />
@@ -78,9 +81,10 @@ export function RegisterForm({ next }: { next?: string }) {
 
 export function ForgotForm() {
   const [state, act, pending] = useActionState(forgotPasswordAction, null);
+  const submit = useSubmit(act);
   if (state?.ok) return <Notice kind="success">{state.message}</Notice>;
   return (
-    <form action={act} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <Feedback state={state} />
       <Field label="E-mail da conta" name="email" type="email" autoComplete="email" required state={state} />
       <button className="btn btn-primary w-full" disabled={pending}>{pending ? "Enviando…" : "Enviar link"}</button>
@@ -90,8 +94,9 @@ export function ForgotForm() {
 
 export function ResetForm({ token }: { token: string }) {
   const [state, act, pending] = useActionState(resetPasswordAction, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <input type="hidden" name="token" value={token} />
       <Feedback state={state} />
       <PasswordField state={state} label="Nova senha" autoComplete="new-password" hint="Mínimo de 8 caracteres, com letras e números." />
@@ -103,8 +108,9 @@ export function ResetForm({ token }: { token: string }) {
 
 export function ProfileForm({ user }: { user: { name: string; email: string; phone: string | null; marketingConsent: boolean } }) {
   const [state, act, pending] = useActionState(updateProfileAction, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <Feedback state={state} />
       <Field label="Nome" name="name" defaultValue={user.name} required state={state} />
       <Field label="E-mail" name="emailRO" defaultValue={user.email} disabled state={state} hint="Para alterar o e-mail, fale com o atendimento." />
@@ -117,8 +123,9 @@ export function ProfileForm({ user }: { user: { name: string; email: string; pho
 
 export function PasswordForm() {
   const [state, act, pending] = useActionState(changePasswordAction, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <Feedback state={state} />
       <PasswordField state={state} name="current" label="Senha atual" />
       <PasswordField state={state} label="Nova senha" autoComplete="new-password" hint="Mínimo de 8 caracteres, com letras e números." />
@@ -130,9 +137,10 @@ export function PasswordForm() {
 type Addr = { id?: string; label?: string | null; recipient?: string; phone?: string | null; zip?: string; street?: string; number?: string; complement?: string | null; district?: string; city?: string; state?: string; isDefault?: boolean };
 export function AddressForm({ address, onDone }: { address?: Addr; onDone?: () => void }) {
   const [state, act, pending] = useActionState(async (p: unknown, fd: FormData) => { const r = await saveAddressAction(p, fd); if (r.ok) onDone?.(); return r; }, null);
+  const submit = useSubmit(act);
   const a = address ?? {};
   return (
-    <form action={act} className="grid gap-3 sm:grid-cols-6">
+    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-6">
       {a.id && <input type="hidden" name="id" value={a.id} />}
       <div className="sm:col-span-6"><Feedback state={state} /></div>
       <div className="sm:col-span-3"><Field label="Apelido (ex.: Casa)" name="label" defaultValue={a.label ?? ""} state={state} /></div>
@@ -153,8 +161,9 @@ export function AddressForm({ address, onDone }: { address?: Addr; onDone?: () =
 
 export function DeleteAccountForm() {
   const [state, act, pending] = useActionState(deleteAccountAction, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-3">
+    <form onSubmit={submit} className="space-y-3">
       <Feedback state={state} />
       <p className="text-sm text-muted">Seus dados de cadastro, endereços e favoritos serão apagados e o acesso encerrado. Pedidos já realizados são mantidos apenas com os dados exigidos por lei (obrigações fiscais e de consumo).</p>
       <Field label='Digite "EXCLUIR" para confirmar' name="confirm" autoComplete="off" state={state} />
@@ -170,9 +179,10 @@ export const TICKET_TYPES: [string, string][] = [
 
 export function TicketForm({ defaults }: { defaults: { name?: string; email?: string; type?: string; orderNumber?: string } }) {
   const [state, act, pending] = useActionState(openTicketAction, null);
+  const submit = useSubmit(act);
   if (state?.ok) return <Notice kind="success">{state.message}</Notice>;
   return (
-    <form action={act} className="grid gap-3 sm:grid-cols-2">
+    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
       <div className="sm:col-span-2"><Feedback state={state} /></div>
       <div className="sm:col-span-2">
         <label className="label" htmlFor="f-type">Motivo</label>
@@ -196,8 +206,9 @@ export function TicketForm({ defaults }: { defaults: { name?: string; email?: st
 
 export function TicketReplyForm({ ticketId }: { ticketId: string }) {
   const [state, act, pending] = useActionState(replyTicketAction, null);
+  const submit = useSubmit(act);
   return (
-    <form action={act} className="space-y-3">
+    <form onSubmit={submit} className="space-y-3">
       <input type="hidden" name="ticketId" value={ticketId} />
       <Feedback state={state} />
       <label className="label" htmlFor="reply">Responder</label>

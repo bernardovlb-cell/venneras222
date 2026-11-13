@@ -3,13 +3,15 @@ import { useActionState, useState } from "react";
 import { submitReviewAction } from "@/app/actions/account";
 import { StarIcon } from "../icons";
 import { Notice } from "../ui/States";
+import { useSubmit } from "../ui/useSubmit";
 
 export function ReviewForm({ productId }: { productId: string }) {
   const [state, action, pending] = useActionState(submitReviewAction, null);
+  const submit = useSubmit(action);
   const [rating, setRating] = useState(0);
   if (state?.ok) return <Notice kind="success">{state.message}</Notice>;
   return (
-    <form action={action} className="card space-y-3 p-5">
+    <form onSubmit={submit} className="card space-y-3 p-5">
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="rating" value={rating} />
       <fieldset>

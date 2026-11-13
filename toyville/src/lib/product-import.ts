@@ -58,7 +58,7 @@ export interface ParsedProduct {
   description: string | null;
   minAgeMonths: number | null;
   maxAgeMonths: number | null;
-  status: "draft" | "active" | "archived";
+  status: "draft" | "active" | "archived" | null; // null = não informado (novo: rascunho; existente: mantém)
   gtin: string | null;
   safetyInfo: string | null;
   certifications: string | null;
@@ -153,9 +153,9 @@ export function parseImportRows(rows: ImportRow[]): { products: ParsedProduct[];
     let p = byProduct.get(pSku.toUpperCase());
     if (!p) {
       if (!name) { issues.push({ row, field: "nome", message: "obrigatório na primeira linha do produto" }); return; }
-      const statusRaw = (clean(r.status) ?? "rascunho").toLowerCase();
-      const status = STATUS_MAP[statusRaw];
-      if (!status) issues.push({ row, field: "status", message: `"${statusRaw}" inválido (use rascunho, ativo ou arquivado)` });
+      const statusRaw = clean(r.status)?.toLowerCase() ?? null;
+      const status = statusRaw ? STATUS_MAP[statusRaw] : null;
+      if (statusRaw && !status) issues.push({ row, field: "status", message: `"${statusRaw}" inválido (use rascunho, ativo ou arquivado)` });
       const slug = slugify(clean(r.slug) ?? name);
       if (!slug) { issues.push({ row, field: "slug", message: "não foi possível gerar a URL" }); return; }
       if (seenSlug.has(slug) && seenSlug.get(slug) !== pSku.toUpperCase()) {
@@ -170,7 +170,7 @@ export function parseImportRows(rows: ImportRow[]): { products: ParsedProduct[];
         categorySlug: clean(r.categoria) ? slugify(clean(r.categoria)!) : null,
         brandName: clean(r.marca), manufacturer: clean(r.fabricante),
         shortDescription: clean(r.descricao_curta), description: clean(r.descricao),
-        minAgeMonths: minAge, maxAgeMonths: maxAge, status: status ?? "draft",
+        minAgeMonths: minAge, maxAgeMonths: maxAge, status: status ?? null,
         gtin: clean(r.gtin), safetyInfo: clean(r.seguranca), certifications: clean(r.certificacoes),
         weightGrams: variant.weightGrams,
         lengthCm: int(r.comprimento_cm, row, "comprimento_cm", issues, 0),
