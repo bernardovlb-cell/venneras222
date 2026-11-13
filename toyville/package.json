@@ -21,11 +21,12 @@
     "vercel-build": "tsx scripts/migrate.ts && tsx scripts/seed.ts && next build"
   },
   "dependencies": {
+    "@vercel/functions": "^3.11.2",
     "drizzle-orm": "^0.45.4",
     "exceljs": "^4.4.0",
     "next": "^16.4.6",
     "papaparse": "^5.7.1",
-    "postgres": "^4.1.1",
+    "pg": "^8.23.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
@@ -36,6 +37,7 @@
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.6",
     "@types/papaparse": "^5.5.2",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "drizzle-kit": "^0.31.11",

@@ -169,6 +169,6 @@ export async function exportAccountData(userId: string) {
   const addrs = await db.select().from(addresses).where(eq(addresses.userId, userId));
   const favs = await db.select({ productId: favorites.productId }).from(favorites).where(eq(favorites.userId, userId));
   const revs = await db.select({ productId: reviews.productId, rating: reviews.rating, body: reviews.body, createdAt: reviews.createdAt }).from(reviews).where(eq(reviews.userId, userId));
-  const ords = await db.execute(sql`select id, number, created_at, total_cents, status, payment_status, shipping_method_name from orders where user_id = ${userId} order by created_at desc`);
+  const { rows: ords } = await db.execute(sql`select id, number, created_at, total_cents, status, payment_status, shipping_method_name from orders where user_id = ${userId} order by created_at desc`);
   return { conta: u, enderecos: addrs, favoritos: favs, avaliacoes: revs, pedidos: ords, geradoEm: new Date().toISOString() };
 }

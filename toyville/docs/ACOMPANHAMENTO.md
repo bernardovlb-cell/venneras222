@@ -72,6 +72,7 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Modo do Mercado Pago deduzido pelo prefixo `TEST-` classificaria credenciais de teste do Checkout Pro (que começam com `APP_USR-`) como produção → ambiente declarado em `MP_ENVIRONMENT`.
 - Agendamentos de hora em hora fariam o deploy falhar no plano gratuito da Vercel (limite de 1×/dia) → diários; instrução para o Pro.
 - Publicação exigia terminal (migrações e criação do dono) → migrações e dados iniciais no build da Vercel (testado em banco vazio e repetido sem duplicar) e tela `/admin/primeiro-acesso` protegida por `SETUP_TOKEN` (testada no navegador).
+- **Homologação na Vercel travava de forma intermitente** (requisições presas ~60 s e depois erro 500): conexões com o banco morriam enquanto a função ficava suspensa e o driver `postgres` as reutilizava. Trocado para `pg` + `attachDatabasePool` (recomendação da Vercel), com timeouts de conexão/consulta e SSL obrigatório fora do localhost (antes o tráfego com o banco não era criptografado).
 - Recuperação de carrinho nunca dispararia (o e-mail só era salvo ao criar o pedido, quando o carrinho já não está abandonado) → contato salvo no consentimento do checkout.
 - Pedido sem consentimento mantinha no carrinho um e-mail gravado antes → agora é apagado.
 - Contraste insuficiente: selo de desconto vermelho sobre rosa (~4,4:1) e “Você economiza” em verde (~3,6:1) → tons escurecidos (≥ 6:1).

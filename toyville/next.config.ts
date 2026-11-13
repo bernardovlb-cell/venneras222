@@ -13,7 +13,7 @@ const storageHost = process.env.STORAGE_PUBLIC_HOST; // ex.: xyz.supabase.co
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: { root: import.meta.dirname },
-  serverExternalPackages: ["sharp", "exceljs", "postgres"],
+  serverExternalPackages: ["sharp", "exceljs", "pg"],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: storageHost ? [{ protocol: "https", hostname: storageHost }] : [],

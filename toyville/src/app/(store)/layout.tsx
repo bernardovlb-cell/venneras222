@@ -10,7 +10,7 @@ import { db } from "@/server/db/client";
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const s = await getSettings();
   const wa = whatsappLink(s.whatsapp);
-  const demo = (await db.execute<{ n: number }>(sql`select count(*)::int as n from products where is_demo and status = 'active'`))[0]?.n ?? 0;
+  const demo = (await db.execute<{ n: number }>(sql`select count(*)::int as n from products where is_demo and status = 'active'`)).rows[0]?.n ?? 0;
   return (
     <ToastProvider>
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white">Pular para o conteúdo</a>
