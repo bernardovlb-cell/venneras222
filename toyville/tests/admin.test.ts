@@ -148,3 +148,21 @@ describe("LGPD", () => {
     expect((await db.execute(sql`select count(*)::int as n from orders where user_id = ${u.id}`))[0].n).toBe(1);
   });
 });
+
+describe("primeiro acesso", () => {
+  it("exige código, cria um único proprietário e não funciona depois", async () => {
+    const { createFirstOwner, ownerExists } = await import("@/server/services/setup");
+    process.env.SETUP_TOKEN = "codigo-secreto-de-teste-123";
+    const base = { name: "Dona da Loja", email: "dona@x.com", password: "Senha1234" };
+    const meta = { ip: "9.9.9.9", userAgent: "t" };
+    await expect(createFirstOwner({ ...base, token: "errado" }, meta)).rejects.toThrow(/incorreto/);
+    expect(await ownerExists()).toBe(false);
+    // createSession usa cookies() da requisição; fora do Next ela falha DEPOIS de gravar — o que importa aqui é o banco
+    await createFirstOwner({ ...base, token: "codigo-secreto-de-teste-123" }, meta).catch(() => {});
+    expect(await ownerExists()).toBe(true);
+    await expect(createFirstOwner({ ...base, email: "outra@x.com", token: "codigo-secreto-de-teste-123" }, meta)).rejects.toThrow(/já foi criado/);
+    const owners = await db.select().from(s.users).where(eq(s.users.roleKey, "owner"));
+    expect(owners).toHaveLength(1);
+    delete process.env.SETUP_TOKEN;
+  });
+});

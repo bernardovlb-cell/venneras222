@@ -9,7 +9,7 @@ const SESSION = process.env.NODE_ENV === "production" ? "__Host-tv_session" : "t
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const has = req.cookies.has(SESSION);
-  if (pathname.startsWith("/admin") && pathname !== "/admin/entrar" && !has) {
+  if (pathname.startsWith("/admin") && pathname !== "/admin/entrar" && pathname !== "/admin/primeiro-acesso" && !has) {
     return NextResponse.redirect(new URL("/admin/entrar", req.url));
   }
   const publicAccount = ["/conta/entrar", "/conta/cadastro", "/conta/recuperar", "/conta/redefinir"];

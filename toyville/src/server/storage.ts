@@ -43,7 +43,7 @@ const supabaseDriver: Driver = {
     if (!url || !k) throw new AppError("storage_not_configured", "Armazenamento Supabase não configurado (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).", 500);
     const res = await fetch(`${url}/storage/v1/object/${bucket}/${key}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${k}`, "Content-Type": contentType, "x-upsert": "false", "cache-control": "31536000" },
+      headers: { Authorization: `Bearer ${k}`, apikey: k, "Content-Type": contentType, "x-upsert": "false", "cache-control": "31536000" },
       body: new Uint8Array(body),
     });
     if (!res.ok) throw new AppError("storage_error", `Falha ao enviar imagem (${res.status}).`, 502);
@@ -54,7 +54,7 @@ const supabaseDriver: Driver = {
     if (!url || !k) return;
     await fetch(`${url}/storage/v1/object/${bucket}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${k}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${k}`, apikey: k, "Content-Type": "application/json" },
       body: JSON.stringify({ prefixes: [key] }),
     });
   },

@@ -13,6 +13,7 @@ Documentação:
 | [`docs/ACOMPANHAMENTO.md`](docs/ACOMPANHAMENTO.md) | Status: concluído, pendente, dependências, testes, próximos passos |
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Stack, decisões, modelo de dados, segurança |
 | [`docs/MERCADO_PAGO.md`](docs/MERCADO_PAGO.md) | Como ativar pagamentos de teste e reais |
+| [`docs/PUBLICAR-HOMOLOGACAO.md`](docs/PUBLICAR-HOMOLOGACAO.md) | **Comece por aqui**: publicar a homologação na Vercel + Supabase, sem terminal |
 | [`docs/HOSPEDAGEM.md`](docs/HOSPEDAGEM.md) | Comparativo de hospedagem e passo a passo de publicação |
 | [`docs/INTEGRACOES.md`](docs/INTEGRACOES.md) | Marketplaces, NF-e, frete, e-mail: o que existe e o que falta |
 | [`docs/MARCA.md`](docs/MARCA.md) | Uso da logo e proposta (pendente de aprovação) de favicon/versão compacta |
@@ -88,5 +89,5 @@ createdb toyville_test && psql -d toyville_test -c "create extension if not exis
 - **Estoque**: ajuste por variação com motivo; todo movimento fica no histórico do produto.
 - **Pedidos**: só mudam para “pago” com confirmação do Mercado Pago. Separação, retirada, envio, cancelamento (não pagos) e reembolso pelo painel.
 - **Textos legais**: Painel > Conteúdo. Páginas com `[PENDENTE: …]` não podem ser publicadas.
-- **Agendamentos** (já configurados em `vercel.json` para a Vercel): `/api/cron/expire-orders` a cada 15–60 min e `/api/cron/abandoned-carts` a cada hora, ambos com `Authorization: Bearer <CRON_SECRET>`.
+- **Agendamentos** (`vercel.json`): `/api/cron/expire-orders` e `/api/cron/abandoned-carts`, com `Authorization: Bearer <CRON_SECRET>`. Hoje 1×/dia (limite do plano gratuito da Vercel); no Pro, passe para de hora em hora.
 - **Backups**: ative backups automáticos no provedor do banco antes de vender.

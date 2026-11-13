@@ -28,7 +28,7 @@ export default async function SettingsPage() {
 
       <Panel title="Pagamentos — Mercado Pago (Checkout Pro)">
         <ul className="space-y-1 text-sm">
-          <li>Credenciais: {mode === "not_configured" ? <Badge tone="red">não configuradas</Badge> : mode === "test" ? <Badge tone="yellow">TESTE</Badge> : <Badge tone="green">produção</Badge>}</li>
+          <li>Credenciais: {mode === "not_configured" ? <Badge tone="red">não configuradas</Badge> : mode === "test" ? <Badge tone="yellow">TESTE</Badge> : mode === "unknown" ? <Badge tone="red">ambiente não declarado (MP_ENVIRONMENT)</Badge> : <Badge tone="green">produção</Badge>}</li>
           <li>Chave secreta do webhook: {env.mpWebhookSecret ? <Badge tone="green">configurada</Badge> : <Badge tone="red">ausente</Badge>}</li>
           <li>URL de notificação a cadastrar no Mercado Pago: <code className="rounded bg-cream px-1">{env.appUrl}/api/webhooks/mercadopago</code> (evento: Pagamentos)</li>
         </ul>

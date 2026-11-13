@@ -62,7 +62,7 @@ export async function launchChecklist() {
   const [real] = await db.select({ n: sql<number>`count(*)::int` }).from(products).where(and(eq(products.isDemo, false), eq(products.status, "active")));
   const mode = mercadoPagoMode();
   return [
-    { ok: mode === "production", label: "Mercado Pago em produção", detail: mode === "not_configured" ? "MP_ACCESS_TOKEN não configurado" : mode === "test" ? "Usando credenciais de TESTE" : "Credenciais de produção ativas" },
+    { ok: mode === "production", label: "Mercado Pago em produção", detail: mode === "not_configured" ? "MP_ACCESS_TOKEN não configurado" : mode === "test" ? "Usando credenciais de TESTE" : mode === "unknown" ? "Defina MP_ENVIRONMENT=test ou production" : "Credenciais de produção ativas" },
     { ok: !!env.mpWebhookSecret, label: "Chave secreta do webhook", detail: env.mpWebhookSecret ? "Configurada" : "MP_WEBHOOK_SECRET ausente — notificações serão recusadas" },
     { ok: env.appUrl.startsWith("https://"), label: "URL pública HTTPS", detail: env.appUrl },
     { ok: methods.some((m) => m.isActive), label: "Entrega/retirada configurada", detail: methods.filter((m) => m.isActive).map((m) => m.name).join(", ") || "Nenhuma modalidade ativa" },

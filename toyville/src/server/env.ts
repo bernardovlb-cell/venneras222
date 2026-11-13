@@ -12,9 +12,14 @@ export const env = {
   get emailProvider() { return (process.env.EMAIL_PROVIDER ?? "outbox") as "outbox" | "resend"; },
 };
 
-/** Credenciais de teste do Mercado Pago começam com TEST-. */
-export function mercadoPagoMode(): "not_configured" | "test" | "production" {
-  const t = env.mpAccessToken;
-  if (!t) return "not_configured";
-  return t.startsWith("TEST-") ? "test" : "production";
+/**
+ * Ambiente do Mercado Pago DECLARADO em MP_ENVIRONMENT (test | production).
+ * Não dá para deduzir pelo prefixo: no Checkout Pro as credenciais de teste também começam com APP_USR-.
+ * Sem declaração, o modo fica "unknown" e o painel trata como pendência.
+ */
+export function mercadoPagoMode(): "not_configured" | "test" | "production" | "unknown" {
+  if (!env.mpAccessToken) return "not_configured";
+  const declared = (process.env.MP_ENVIRONMENT ?? "").trim().toLowerCase();
+  if (declared === "test" || declared === "production") return declared;
+  return env.mpAccessToken.startsWith("TEST-") ? "test" : "unknown";
 }

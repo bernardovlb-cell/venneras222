@@ -69,6 +69,9 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Logout por GET permitia deslogar a equipe a partir de outro site → apenas POST.
 - Driver `postgres` v4 não serializa `Date` em SQL bruto → trocado por operadores tipados.
 - Script de teste deixava servidor órfão na porta → encerramento do grupo de processos.
+- Modo do Mercado Pago deduzido pelo prefixo `TEST-` classificaria credenciais de teste do Checkout Pro (que começam com `APP_USR-`) como produção → ambiente declarado em `MP_ENVIRONMENT`.
+- Agendamentos de hora em hora fariam o deploy falhar no plano gratuito da Vercel (limite de 1×/dia) → diários; instrução para o Pro.
+- Publicação exigia terminal (migrações e criação do dono) → migrações e dados iniciais no build da Vercel (testado em banco vazio e repetido sem duplicar) e tela `/admin/primeiro-acesso` protegida por `SETUP_TOKEN` (testada no navegador).
 - Recuperação de carrinho nunca dispararia (o e-mail só era salvo ao criar o pedido, quando o carrinho já não está abandonado) → contato salvo no consentimento do checkout.
 - Pedido sem consentimento mantinha no carrinho um e-mail gravado antes → agora é apagado.
 - Contraste insuficiente: selo de desconto vermelho sobre rosa (~4,4:1) e “Você economiza” em verde (~3,6:1) → tons escurecidos (≥ 6:1).
@@ -82,7 +85,7 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 | `npm run typecheck` | sem erros |
 | `npm run lint` | sem erros e sem avisos |
 | `npm run build` | concluído |
-| `npm test` — 82 testes (unidade + integração com PostgreSQL real) | 82 passaram |
+| `npm test` — 83 testes (unidade + integração com PostgreSQL real) | 83 passaram |
 | `npm run test:e2e` — 22 cenários no navegador (build de produção) | 22 passaram |
 | Lighthouse 13 (celular, rede lenta simulada, servidor local) | Desempenho 99–100 · Acessibilidade 100 · Boas práticas 100 · SEO 100 em início, produto, categoria, ofertas e guia de presentes. LCP 0,6–0,9 s, CLS ≤ 0,003. Exceções intencionais: busca e produtos [DEMO] marcados como não indexáveis |
 
@@ -95,7 +98,8 @@ E2E: login da equipe (erro e sucesso), painel exige login, cliente recebe 404 no
 
 ## Próximos passos sugeridos
 
-1. Criar a aplicação no Mercado Pago e homologar em ambiente de teste numa URL HTTPS de preview.
+1. Publicar a homologação seguindo `docs/PUBLICAR-HOMOLOGACAO.md`.
+2. Criar a conta Mercado Pago da loja (se ainda não houver) e a aplicação Checkout Pro de teste; homologar compras.
 2. Contratar banco (Supabase Pro) e hospedagem; publicar a versão de homologação.
 3. Preencher configurações, retirada/entrega e textos legais; aprovar políticas.
 4. Importar o catálogo real com fotos; remover dados de demonstração.

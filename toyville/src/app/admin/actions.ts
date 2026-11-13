@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { requirePermission } from "@/server/auth/guards";
 import { login } from "@/server/services/account";
+import { createFirstOwner } from "@/server/services/setup";
 import { requestMeta } from "@/server/http";
 import { toActionError, type ActionResult, AppError } from "@/server/errors";
 import * as P from "@/server/services/admin-products";
@@ -39,6 +40,15 @@ async function run<T>(fn: () => Promise<T | void>, message = "Salvo."): R<T> {
 export async function adminLoginAction(_: unknown, fd: FormData): Promise<ActionResult> {
   try {
     await login(str(fd, "email"), str(fd, "password"), await requestMeta(), { staffOnly: true });
+  } catch (e) {
+    return toActionError(e);
+  }
+  redirect("/admin");
+}
+
+export async function firstOwnerAction(_: unknown, fd: FormData): Promise<ActionResult> {
+  try {
+    await createFirstOwner({ token: str(fd, "token"), name: str(fd, "name"), email: str(fd, "email"), password: str(fd, "password") }, await requestMeta());
   } catch (e) {
     return toActionError(e);
   }
