@@ -12,7 +12,7 @@ type Suggest = {
   brands: { id: string; name: string; slug: string }[];
 };
 
-export function SearchBox({ initial = "", autoFocus = false }: { initial?: string; autoFocus?: boolean }) {
+export function SearchBox({ initial = "", autoFocus = false, label = "Buscar na loja" }: { initial?: string; autoFocus?: boolean; label?: string }) {
   const [q, setQ] = useState(initial);
   const [data, setData] = useState<Suggest | null>(null);
   const [open, setOpen] = useState(false);
@@ -20,6 +20,7 @@ export function SearchBox({ initial = "", autoFocus = false }: { initial?: strin
   const [active, setActive] = useState(-1);
   const router = useRouter();
   const listId = useId();
+  const inputId = useId();
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,12 +60,12 @@ export function SearchBox({ initial = "", autoFocus = false }: { initial?: strin
 
   return (
     <div ref={boxRef} className="relative w-full">
-      <form role="search" onSubmit={submit} action="/busca">
-        <label htmlFor="busca" className="sr-only">Buscar brinquedos</label>
-        <div className="flex items-center rounded-full border-2 border-line bg-white pl-4 pr-1.5 transition focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(31,79,209,.12)]">
-          <SearchIcon size={20} className="shrink-0 text-muted" />
+      <form role="search" aria-label={label} onSubmit={submit} action="/busca">
+        <label htmlFor={inputId} className="sr-only">Buscar brinquedos</label>
+        <div className="flex items-center rounded-full border-2 border-transparent bg-[#f4f1ea] pl-4 pr-1.5 transition hover:bg-[#efebe1] focus-within:border-primary focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(31,79,209,.12)]">
+          <SearchIcon size={20} className="shrink-0 text-primary" />
           <input
-            id="busca" name="q" value={q} autoFocus={autoFocus} autoComplete="off" enterKeyHint="search"
+            id={inputId} name="q" value={q} autoFocus={autoFocus} autoComplete="off" enterKeyHint="search"
             onChange={(e) => { setQ(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, flat.length - 1)); }
@@ -73,10 +74,10 @@ export function SearchBox({ initial = "", autoFocus = false }: { initial?: strin
             }}
             role="combobox" aria-expanded={showPanel} aria-controls={listId} aria-autocomplete="list"
             aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-            placeholder="Busque por brinquedo, marca ou idade"
-            className="min-h-[44px] w-full bg-transparent px-3 text-[15px] outline-none placeholder:text-muted/80"
+            placeholder="Procure por brinquedo, marca ou idade"
+            className="min-h-[46px] w-full min-w-0 bg-transparent px-3 text-[16px] outline-none placeholder:text-muted/80"
           />
-          <button type="submit" className="btn btn-primary btn-sm !min-h-[36px] !px-4">Buscar</button>
+          <button type="submit" className="btn btn-primary btn-sm !min-h-[38px] !px-3 sm:!px-4" aria-label="Buscar"><SearchIcon size={18} className="sm:hidden" /><span className="hidden sm:inline">Buscar</span></button>
         </div>
       </form>
       {showPanel && (

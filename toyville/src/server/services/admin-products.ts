@@ -229,8 +229,12 @@ export const categorySchema = z.object({
   isFeatured: z.boolean(),
 });
 
-export async function saveCategory(input: unknown, userId: string, id?: string) {
-  const d = categorySchema.parse(input);
+/**
+ * Cria/edita categoria. `image`: URL da foto já processada (`storeImage`), `null` para remover,
+ * ausente para manter a atual.
+ */
+export async function saveCategory(input: unknown, userId: string, id?: string, image?: { imageUrl: string | null }) {
+  const d = { ...categorySchema.parse(input), ...(image ?? {}) };
   const slug = slugify(d.slug || d.name);
   if (id && d.parentId) {
     // impede ciclos (categoria dentro de si mesma ou de uma descendente)

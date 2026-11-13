@@ -16,7 +16,7 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <div className="container-tv py-6">
       <h1 className="text-3xl font-extrabold text-primary-dark sm:text-4xl">{q ? <>Resultados para “{q}”</> : "Todos os brinquedos"}</h1>
-      <div className="mt-4 max-w-2xl lg:hidden"><SearchBox initial={q} /></div>
+      <div className="mt-4 max-w-2xl lg:hidden"><SearchBox initial={q} label="Refinar a busca" /></div>
       <div className="mt-6"><Catalog sp={sp} basePath="/busca" /></div>
     </div>
   );

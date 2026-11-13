@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import * as s from "@/server/db/schema";
 import { executeImport, planImport } from "@/server/services/import";
-import { saveVariant, deleteOrArchiveProduct, adjustStock } from "@/server/services/admin-products";
+import { saveVariant, deleteOrArchiveProduct, adjustStock, saveCategory } from "@/server/services/admin-products";
 import { submitReview } from "@/server/services/reviews";
 import { anonymizeAccount } from "@/server/services/account";
 import { hasPermission, DEFAULT_ROLES } from "@/server/auth/permissions";
@@ -82,6 +82,17 @@ describe("cadastro administrativo", () => {
     expect(await deleteOrArchiveProduct(productId, ADMIN)).toBe("archived");
     const { productId: p2 } = await makeProduct();
     expect(await deleteOrArchiveProduct(p2, ADMIN)).toBe("deleted");
+  });
+
+  it("categoria: foto é gravada, mantida quando o formulário vem sem arquivo e removida quando pedido", async () => {
+    const base = { name: "Fantasias", slug: "fantasias", parentId: "", description: "", position: "0", isActive: true, isFeatured: false };
+    await saveCategory(base, ADMIN, undefined, { imageUrl: "/uploads/categorias/a-480.webp" });
+    const [c] = await db.select().from(s.categories).where(eq(s.categories.slug, "fantasias"));
+    expect(c.imageUrl).toBe("/uploads/categorias/a-480.webp");
+    await saveCategory({ ...base, description: "Nova" }, ADMIN, c.id); // sem arquivo: mantém
+    expect((await db.select().from(s.categories).where(eq(s.categories.id, c.id)))[0]).toMatchObject({ imageUrl: "/uploads/categorias/a-480.webp", description: "Nova" });
+    await saveCategory(base, ADMIN, c.id, { imageUrl: null }); // remover
+    expect((await db.select().from(s.categories).where(eq(s.categories.id, c.id)))[0].imageUrl).toBeNull();
   });
 
   it("promoção sem escopo é recusada; relâmpago exige data de término", async () => {

@@ -158,7 +158,11 @@ export async function importAction(_: unknown, fd: FormData): R<{ plan?: ImportP
 export async function saveCategoryAction(_: unknown, fd: FormData): R {
   return run(async () => {
     const u = await requirePermission("products.write");
-    await P.saveCategory({ name: str(fd, "name"), slug: str(fd, "slug"), parentId: str(fd, "parentId"), description: str(fd, "description"), position: str(fd, "position") || "0", isActive: bool(fd, "isActive"), isFeatured: bool(fd, "isFeatured") }, u.id, str(fd, "id") || undefined);
+    const file = fd.get("image");
+    const image = bool(fd, "removeImage") ? { imageUrl: null }
+      : file instanceof File && file.size ? { imageUrl: (await storeImage(file, "categorias")).thumbUrl }
+      : undefined;
+    await P.saveCategory({ name: str(fd, "name"), slug: str(fd, "slug"), parentId: str(fd, "parentId"), description: str(fd, "description"), position: str(fd, "position") || "0", isActive: bool(fd, "isActive"), isFeatured: bool(fd, "isFeatured") }, u.id, str(fd, "id") || undefined, image);
   }, "Categoria salva.");
 }
 export async function deleteCategoryAction(id: string): R { return run(async () => { const u = await requirePermission("products.write"); await P.deleteCategory(id, u.id); }, "Categoria excluída."); }

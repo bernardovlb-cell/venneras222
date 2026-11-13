@@ -15,9 +15,9 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     <ToastProvider>
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white">Pular para o conteúdo</a>
       {demo > 0 && (
-        <div className="bg-ink px-4 py-1.5 text-center text-xs font-bold text-white">
+        <aside aria-label="Aviso de demonstração" className="bg-ink px-4 py-1.5 text-center text-xs font-bold text-white">
           Ambiente com <span className="text-accent">dados de demonstração</span> — produtos marcados com [DEMO] não estão à venda.
-        </div>
+        </aside>
       )}
       <Header />
       <main id="conteudo" className="min-h-[60vh]">{children}</main>

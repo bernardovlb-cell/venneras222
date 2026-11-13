@@ -5,6 +5,7 @@
  */
 import { createRequire } from "node:module";
 import { spawn, execSync } from "node:child_process";
+import sharp from "sharp";
 import { createHmac } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -106,6 +107,21 @@ try {
     await a.selectOption("select[name=status]", "active");
     await a.click("button:has-text('Salvar produto')");
     await a.getByText("Produto salvo.").waitFor();
+  });
+
+  await step("foto de categoria enviada no painel aparece na home no lugar do ícone", async () => {
+    const png = await sharp({ create: { width: 400, height: 400, channels: 3, background: { r: 255, g: 194, b: 26 } } }).png().toBuffer();
+    await a.goto(`${BASE}/admin/categorias`);
+    const row = a.locator("li", { hasText: "/carrinhos-e-pistas" }).first();
+    await row.locator("button:has-text('Editar')").click();
+    const form = a.locator("form", { has: a.locator("input[name=image]") });
+    await form.locator("input[name=image]").setInputFiles({ name: "carrinhos.png", mimeType: "image/png", buffer: png });
+    await form.locator("button:has-text('Salvar')").click();
+    await a.locator("li", { hasText: "/carrinhos-e-pistas" }).getByText("com foto").waitFor(); // o formulário fecha ao salvar
+    await a.goto(`${BASE}/`);
+    const img = a.locator("a[href='/c/carrinhos-e-pistas'] img").first();
+    await img.waitFor();
+    assert(/categorias\/.+\.webp/.test(decodeURIComponent((await img.getAttribute("src")) ?? "")), "foto da categoria não aparece na home");
   });
 
   await step("importar produtos por CSV (pré-visualização, erro e confirmação)", async () => {
@@ -267,7 +283,7 @@ try {
     await c.fill("#f-password", "Senha1234");
     await c.click("button:has-text('Criar conta')");
     await c.waitForURL(`${BASE}/conta`);
-    await c.getByText("Minha conta").first().waitFor();
+    await c.locator("main").getByText("Minha conta").first().waitFor();
     await c.click("button:has-text('Sair')");
     await c.waitForURL(`${BASE}/`);
   });
@@ -321,6 +337,47 @@ try {
       await ctx.close();
     }
     assert(!bad.length, `rolagem horizontal em: ${bad.join(", ")}`);
+  });
+
+  // Seções com overflow-hidden escondem o vazamento sem gerar rolagem: procura texto/botões cortados pela borda.
+  await step("nada cortado pela borda da tela no celular (home, presentes, categoria)", async () => {
+    const bad = [];
+    for (const dev of ["iPhone SE", "iPhone 13"]) {
+      const ctx = await browser.newContext({ ...devices[dev], reducedMotion: "reduce" });
+      const p = await ctx.newPage();
+      for (const u of ["/", "/presentes", "/c/carrinhos-e-pistas"]) {
+        await p.goto(BASE + u);
+        const found = await p.evaluate(() => {
+          const W = innerWidth, out = [];
+          const scrollsX = (el) => { for (let e = el.parentElement; e; e = e.parentElement) { const s = getComputedStyle(e); if ((s.overflowX === "auto" || s.overflowX === "scroll") && e.scrollWidth > e.clientWidth) return true; } return false; };
+          for (const el of document.querySelectorAll("main h1, main h2, main p, main a, main button, main label, header a, header button")) {
+            const r = el.getBoundingClientRect();
+            if (!r.width || getComputedStyle(el).visibility === "hidden" || el.closest("[aria-hidden=true]")) continue;
+            if ((r.right > W + 1 || r.left < -1) && !scrollsX(el)) out.push(`${el.tagName} "${el.textContent.trim().slice(0, 24)}"`);
+          }
+          return out;
+        });
+        bad.push(...found.map((f) => `${dev} ${u}: ${f}`));
+      }
+      await ctx.close();
+    }
+    assert(!bad.length, `cortado: ${bad.slice(0, 5).join("; ")}`);
+  });
+
+  await step("guia de presentes por toques: idade + orçamento levam às sugestões", async () => {
+    const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    const form = p.locator("form[action='/presentes']");
+    await form.locator("label:has(input[value='3-4'])").click();
+    await form.locator("label:has(input[value='50-100'])").click();
+    await form.locator("button[type=submit]").click();
+    await p.waitForURL(/\/presentes\?/);
+    const u = new URL(p.url());
+    assert(u.searchParams.get("idade") === "3-4" && u.searchParams.get("orcamento") === "50-100", `parâmetros errados: ${u.search}`);
+    assert(await p.locator("h2", { hasText: /sugest/ }).count() > 0, "resultado do guia não apareceu");
+    assert(await p.locator("input[name=idade][value='3-4']").isChecked(), "idade escolhida não ficou marcada");
+    await ctx.close();
   });
 
   await step("SEO: sitemap, robots e dados estruturados de produto", async () => {

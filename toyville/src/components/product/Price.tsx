@@ -1,14 +1,14 @@
 import { formatBRL, discountPercent } from "@/lib/money";
 
-export function Price({ priceCents, listPriceCents, size = "md", showSavings = false }: { priceCents: number; listPriceCents: number; size?: "sm" | "md" | "lg"; showSavings?: boolean }) {
+export function Price({ priceCents, listPriceCents, size = "md", showSavings = false, hideBadge = false }: { priceCents: number; listPriceCents: number; size?: "sm" | "md" | "lg"; showSavings?: boolean; hideBadge?: boolean }) {
   const off = discountPercent(listPriceCents, priceCents);
-  const big = size === "lg" ? "text-3xl" : size === "md" ? "text-xl" : "text-lg";
+  const big = size === "lg" ? "text-3xl" : size === "md" ? "text-xl" : "text-[1.3rem]";
   return (
     <div className="leading-tight">
       {off > 0 && (
         <p className="text-sm text-muted">
           <span className="sr-only">Preço normal: </span><s>{formatBRL(listPriceCents)}</s>
-          <span className="ml-1.5 chip bg-soft-red !py-0.5 text-promo-ink">-{off}%</span>
+          {!hideBadge && <span className="ml-1.5 chip bg-soft-red !py-0.5 text-promo-ink">-{off}%</span>}
         </p>
       )}
       <p className={`font-display font-extrabold ${big} ${off > 0 ? "text-promo" : "text-ink"}`}>

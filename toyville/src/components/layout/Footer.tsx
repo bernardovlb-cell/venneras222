@@ -9,11 +9,11 @@ export async function Footer() {
   const wa = whatsappLink(s.whatsapp);
   const socials = Object.entries(s.social).filter(([, v]) => v);
   return (
-    <footer className="mt-16 bg-primary-dark text-white">
-      <div aria-hidden className="h-3 w-full bg-[repeating-linear-gradient(90deg,var(--tv-promo)_0_25%,var(--tv-accent)_25%_50%,var(--tv-success)_50%_75%,var(--tv-primary)_75%_100%)] bg-[length:160px_100%]" />
+    <footer className="mt-20 bg-primary-dark text-white">
+      <div>
       <div className="container-tv grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="inline-block rounded-2xl bg-white p-2"><Logo src={s.brand.logoUrl} width={s.brand.logoWidth} height={s.brand.logoHeight} className="w-[140px]" /></div>
+          <div className="inline-block rounded-xl bg-white p-2"><Logo src={s.brand.logoUrl} width={s.brand.logoWidth} height={s.brand.logoHeight} className="w-[140px]" /></div>
           {s.store.tagline && <p className="mt-3 max-w-xs text-sm text-white/80">{s.store.tagline}</p>}
         </div>
         <div>
@@ -59,6 +59,7 @@ export async function Footer() {
           </p>
           <p>Pagamentos processados pelo Mercado Pago.</p>
         </div>
+      </div>
       </div>
     </footer>
   );

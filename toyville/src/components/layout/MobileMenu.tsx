@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MenuIcon, CloseIcon, ChevronDown, GiftIcon, UserIcon, HeartIcon, ChatIcon, BoltIcon } from "../icons";
+import { MenuIcon, CloseIcon, ChevronDown, GiftIcon, UserIcon, HeartIcon, ChatIcon, BoltIcon, StarIcon } from "../icons";
+import { CategoryIcon } from "../catalog/CategoryIcon";
 
 type Cat = { id: string; name: string; slug: string; children: { id: string; name: string; slug: string }[] };
 
@@ -36,19 +37,23 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
           <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           <nav className="absolute inset-y-0 left-0 flex w-[86%] max-w-sm animate-slide-left flex-col overflow-y-auto bg-white shadow-pop">
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
-              <span className="font-display text-xl font-extrabold text-primary-dark">Menu</span>
-              <button ref={closeRef} type="button" onClick={() => setOpen(false)} className="btn btn-ghost !px-2.5" aria-label="Fechar menu"><CloseIcon /></button>
+              <span className="text-lg font-extrabold">Menu</span>
+              <button ref={closeRef} type="button" onClick={() => setOpen(false)} className="btn btn-ghost !min-h-[40px] !px-2.5" aria-label="Fechar menu"><CloseIcon /></button>
             </div>
-            <div className="grid grid-cols-2 gap-2 p-4">
-              <Link href="/presentes" className="flex items-center gap-2 rounded-2xl bg-soft-yellow p-3 text-sm font-extrabold leading-tight"><GiftIcon size={20} className="shrink-0" /> Presentes</Link>
-              <Link href="/ofertas" className="flex items-center gap-2 rounded-2xl bg-soft-red p-3 text-sm font-extrabold leading-tight text-promo-ink"><BoltIcon size={18} className="shrink-0" /> Ofertas</Link>
+            <div className="grid grid-cols-3 gap-2 p-4">
+              <Link href="/presentes" className="flex flex-col items-center gap-1 rounded-xl bg-soft-yellow p-3 text-center text-[13px] font-extrabold leading-tight"><GiftIcon size={22} /> Presentes</Link>
+              <Link href="/ofertas" className="flex flex-col items-center gap-1 rounded-xl bg-soft-red p-3 text-center text-[13px] font-extrabold leading-tight text-promo-ink"><BoltIcon size={20} /> Ofertas</Link>
+              <Link href="/busca?ordem=newest" className="flex flex-col items-center gap-1 rounded-xl bg-soft-blue p-3 text-center text-[13px] font-extrabold leading-tight text-primary-dark"><StarIcon size={20} filled={false} /> Lançamentos</Link>
             </div>
             <p className="px-4 pb-1 text-xs font-extrabold uppercase tracking-wider text-muted">Categorias</p>
             <ul className="px-2">
               {categories.map((c) => (
                 <li key={c.id}>
                   <div className="flex items-center">
-                    <Link href={`/c/${c.slug}`} className="flex-1 rounded-xl px-3 py-3 text-[15px] font-bold hover:bg-cream">{c.name}</Link>
+                    <Link href={`/c/${c.slug}`} className="flex flex-1 items-center gap-3 rounded-xl px-2 py-1.5 text-[15px] font-bold hover:bg-cream">
+                      <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-lg bg-soft-blue text-primary"><CategoryIcon slug={c.slug} size={20} /></span>
+                      {c.name}
+                    </Link>
                     {c.children.length > 0 && (
                       <button type="button" onClick={() => setExpanded(expanded === c.id ? null : c.id)} aria-expanded={expanded === c.id}
                         aria-label={`Subcategorias de ${c.name}`} className="btn btn-ghost !px-3">

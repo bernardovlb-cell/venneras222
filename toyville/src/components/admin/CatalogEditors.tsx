@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AdminForm, F, Check, ActionButton } from "./ui";
 import { saveCategoryAction, deleteCategoryAction, saveBrandAction, deleteBrandAction } from "@/app/admin/actions";
 
-type C = { id: string; name: string; slug: string; parentId: string | null; description: string | null; position: number; isActive: boolean; isFeatured: boolean; depth: number };
+type C = { id: string; name: string; slug: string; parentId: string | null; description: string | null; position: number; isActive: boolean; isFeatured: boolean; depth: number; imageUrl: string | null };
 
 export function CategoryEditor({ category, options, count = 0, children }: { category?: C; options: C[]; count?: number; children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -29,6 +29,17 @@ export function CategoryEditor({ category, options, count = 0, children }: { cat
         <F label="Descrição" name="description" defaultValue={category?.description ?? ""} className="sm:col-span-2" />
         <Check label="Ativa" name="isActive" defaultChecked={category?.isActive ?? true} />
         <Check label="Destaque na home" name="isFeatured" defaultChecked={category?.isFeatured ?? false} />
+        <div className="flex items-start gap-3 sm:col-span-2">
+          {category?.imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- miniatura no painel
+            <img src={category.imageUrl} alt="" width={64} height={64} className="size-16 shrink-0 rounded-xl border border-line object-cover" />
+          )}
+          <div className="min-w-0 flex-1">
+            <F label={category?.imageUrl ? "Trocar foto" : "Foto da categoria (opcional)"} name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif"
+              hint="Quadrada, de preferência com fundo claro. Aparece no lugar do ícone na loja. JPG, PNG, WebP ou AVIF, até 10 MB." />
+            {category?.imageUrl && <div className="mt-2"><Check label="Remover a foto atual" name="removeImage" /></div>}
+          </div>
+        </div>
       </div>
     </AdminForm>
   );

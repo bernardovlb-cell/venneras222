@@ -283,6 +283,12 @@ export async function getHomeData() {
   return { sections, banners: activeBanners };
 }
 
+/** Há algum produto ativo? Consulta barata usada na home para explicar a vitrine vazia. */
+export async function hasActiveProducts() {
+  const [row] = await db.select({ id: products.id }).from(products).where(eq(products.status, "active")).limit(1);
+  return !!row;
+}
+
 export async function getFeaturedCategories() {
   const cats = (await getCategories()).filter((c) => c.isActive);
   const featured = cats.filter((c) => c.isFeatured);

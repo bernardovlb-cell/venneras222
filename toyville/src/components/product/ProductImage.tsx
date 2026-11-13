@@ -6,14 +6,11 @@ export function ProductImage({ src, alt, sizes, priority = false, className = ""
     return <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={`object-contain ${className}`} />;
   }
   return (
-    <div className={`absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_30%_20%,var(--tv-soft-yellow),transparent_55%),radial-gradient(circle_at_80%_80%,var(--tv-soft-blue),transparent_50%)] ${className}`} role="img" aria-label={`${alt} — foto em breve`}>
-      <svg viewBox="0 0 120 120" className="w-1/2 max-w-[140px] opacity-80" aria-hidden>
-        <rect x="14" y="62" width="40" height="40" rx="8" fill="var(--tv-primary)" />
-        <rect x="58" y="62" width="40" height="40" rx="8" fill="var(--tv-promo)" />
-        <rect x="36" y="20" width="40" height="40" rx="8" fill="var(--tv-accent)" />
-        <path d="M95 18l3.2 6.5 7.2 1-5.2 5 1.2 7.1L95 34.3l-6.4 3.3 1.2-7.1-5.2-5 7.2-1z" fill="var(--tv-success)" />
+    <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#f6f5f1] text-[#a7a294] ${className}`} role="img" aria-label={`${alt} — foto em breve`}>
+      <svg viewBox="0 0 24 24" className="w-1/5 max-w-[56px]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="10" r="1.8" /><path d="m21 16-5-5-8 8" />
       </svg>
-      <span className="absolute bottom-3 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold text-muted">Foto em breve</span>
+      <span className="text-[11px] font-bold uppercase tracking-wider text-[#6b6657]">Foto em breve</span>
     </div>
   );
 }

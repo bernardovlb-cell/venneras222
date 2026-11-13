@@ -22,7 +22,7 @@ export default async function CategoriesPage() {
               <li key={c.id} className="py-2" style={{ paddingLeft: c.depth * 20 }}>
                 <CategoryEditor category={c} options={cats} count={countBy.get(c.id) ?? 0}>
                   <span className="font-bold">{c.name}</span> <span className="text-xs text-muted">/{c.slug} · {countBy.get(c.id) ?? 0} produto(s)</span>{" "}
-                  {!c.isActive && <Badge tone="red">inativa</Badge>} {c.isFeatured && <Badge tone="blue">destaque na home</Badge>}
+                  {!c.isActive && <Badge tone="red">inativa</Badge>} {c.isFeatured && <Badge tone="blue">destaque na home</Badge>} {c.imageUrl && <Badge tone="green">com foto</Badge>}
                 </CategoryEditor>
               </li>
             ))}
