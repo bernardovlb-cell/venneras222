@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MenuIcon, CloseIcon, ChevronDown, GiftIcon, UserIcon, HeartIcon, ChatIcon, BoltIcon } from "../icons";
@@ -28,7 +29,9 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
       <button type="button" onClick={() => setOpen(true)} className="btn btn-ghost !min-h-[44px] !px-2.5 lg:hidden" aria-label="Abrir menu" aria-expanded={open}>
         <MenuIcon size={26} />
       </button>
-      {open && (
+      {/* Portal no <body>: o cabeçalho usa backdrop-filter, que faz elementos "fixed" dentro dele
+          se posicionarem pelo cabeçalho (e não pela tela) — a gaveta ficava cortada no celular. */}
+      {open && createPortal(
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           <nav className="absolute inset-y-0 left-0 flex w-[86%] max-w-sm animate-slide-left flex-col overflow-y-auto bg-white shadow-pop">
@@ -37,8 +40,8 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
               <button ref={closeRef} type="button" onClick={() => setOpen(false)} className="btn btn-ghost !px-2.5" aria-label="Fechar menu"><CloseIcon /></button>
             </div>
             <div className="grid grid-cols-2 gap-2 p-4">
-              <Link href="/presentes" className="flex items-center gap-2 rounded-2xl bg-soft-yellow p-3 text-sm font-extrabold"><GiftIcon size={20} /> Guia de presentes</Link>
-              <Link href="/ofertas" className="flex items-center gap-2 rounded-2xl bg-soft-red p-3 text-sm font-extrabold text-promo-ink"><BoltIcon size={18} /> Ofertas</Link>
+              <Link href="/presentes" className="flex items-center gap-2 rounded-2xl bg-soft-yellow p-3 text-sm font-extrabold leading-tight"><GiftIcon size={20} className="shrink-0" /> Presentes</Link>
+              <Link href="/ofertas" className="flex items-center gap-2 rounded-2xl bg-soft-red p-3 text-sm font-extrabold leading-tight text-promo-ink"><BoltIcon size={18} className="shrink-0" /> Ofertas</Link>
             </div>
             <p className="px-4 pb-1 text-xs font-extrabold uppercase tracking-wider text-muted">Categorias</p>
             <ul className="px-2">
@@ -67,7 +70,8 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
               <Link href="/atendimento" className="flex items-center gap-3 rounded-xl p-3 hover:bg-cream"><ChatIcon size={20} /> Atendimento</Link>
             </div>
           </nav>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

@@ -283,6 +283,29 @@ try {
     await c.getByText(/não foi encontrad|404/i).first().waitFor();
   });
 
+  // ---------------- gavetas no celular (menu e filtros ocupam a tela inteira)
+  await step("menu e filtros no celular ocupam a tela inteira e mostram todos os itens", async () => {
+    const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    await p.click("button[aria-label='Abrir menu']");
+    const nav = p.locator("[role=dialog][aria-label=Menu] nav");
+    await nav.waitFor();
+    const box = await nav.boundingBox();
+    const vh = p.viewportSize().height;
+    assert(box && box.height >= vh - 2, `gaveta do menu com ${box?.height}px de ${vh}px`);
+    const entrar = p.getByRole("link", { name: /Entrar ou cadastrar/ });
+    await entrar.scrollIntoViewIfNeeded();
+    assert(await entrar.isVisible(), "link Entrar não visível no menu");
+    await p.click("button[aria-label='Fechar menu'] >> nth=-1");
+    await p.goto(BASE + "/c/carrinhos-e-pistas");
+    await p.click("button[aria-controls=filtros]");
+    const sheet = await p.locator("#filtros").boundingBox();
+    assert(sheet && sheet.y + sheet.height >= vh - 2 && sheet.height > 200, `painel de filtros mal posicionado: ${JSON.stringify(sheet)}`);
+    await p.screenshot({ path: `${shotDir}/menu-celular.png` });
+    await ctx.close();
+  });
+
   // ---------------- responsividade
   await step("sem rolagem horizontal em 375px e 1366px", async () => {
     const pages = ["/", "/busca", "/c/carrinhos-e-pistas", "/produto/caminhao-basculante-e2e", "/carrinho", "/presentes?idade=3-4", "/atendimento", "/conta/entrar", "/p/trocas-e-devolucoes"];
