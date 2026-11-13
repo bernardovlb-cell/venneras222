@@ -21,10 +21,8 @@ Tudo acontece no navegador. Nenhuma senha ou chave deve ser colada em chat — s
 
 ## 2. Vercel (site)
 
-> **Atenção à branch.** O código da ToyVille está na branch `claude/wonderful-fermi-39z68b` e ainda não está na `main`.
-> A Vercel publica a `main` por padrão — sem a pasta `toyville`, o primeiro deploy falha. Escolha uma opção:
-> - **A (recomendada):** incorporar a branch à `main` (pull request) antes de importar. Adicionar a pasta `toyville/` não altera o site da Venneras.
-> - **B:** importar mesmo assim e, em *Deployments*, publicar a branch `claude/wonderful-fermi-39z68b` (deploy de *preview*). As variáveis precisam estar marcadas também para **Preview**.
+> **Atenção à branch.** Este repositório não tem `main`: a branch padrão é `claude/affectionate-einstein-1x7kfn`, e é ela que a Vercel publica.
+> A ToyVille entra nela pelo pull request [bernardovlb-cell/venneras222#1](https://github.com/bernardovlb-cell/venneras222/pull/1). **Faça o merge antes de importar na Vercel**; sem isso a pasta `toyville` não existe na branch publicada e o deploy falha. O merge só adiciona a pasta `toyville/`: o site da Venneras não muda.
 
 1. Em https://vercel.com/new, importe o repositório **`venneras222`** do GitHub (autorize o acesso se pedido).
 2. Antes de clicar em Deploy:
