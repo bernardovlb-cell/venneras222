@@ -3,13 +3,13 @@
  * modalidades de entrega (todas desativadas até configuração) e rascunhos de páginas institucionais
  * marcados como PENDENTES de aprovação. Idempotente.
  */
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 import { DEFAULT_ROLES } from "../auth/permissions";
 import { POLICY_DRAFTS } from "./policies";
 
-type DB = PostgresJsDatabase<typeof schema>;
+type DB = NodePgDatabase<typeof schema>;
 
 export const BASE_CATEGORIES: { slug: string; name: string; description: string; children?: { slug: string; name: string }[] }[] = [
   { slug: "brinquedos-educativos", name: "Brinquedos educativos", description: "Para aprender brincando.", children: [{ slug: "quebra-cabecas", name: "Quebra-cabeças" }, { slug: "ciencia-e-experiencias", name: "Ciência e experiências" }] },

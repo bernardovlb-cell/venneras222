@@ -7,7 +7,7 @@
 | Aplicação | **Next.js 16 (App Router) + React 19 + TypeScript** | Um único projeto com renderização no servidor (SEO das páginas de produto), Server Actions para mutações (com checagem de origem embutida) e rotas de API para webhook/cron. |
 | Estilo | **Tailwind CSS 4** com tokens CSS | Tokens de marca (`--tv-primary` etc.) vêm do banco e são trocados no painel sem rebuild. |
 | Banco | **PostgreSQL** (local, Supabase ou qualquer provedor) | Transações e `SELECT … FOR UPDATE` são essenciais para estoque e cupons sem venda dupla. `pg_trgm` + `unaccent` dão busca tolerante a erros sem serviço pago. |
-| Acesso a dados | **Drizzle ORM** + `postgres` (driver) | Tipagem do schema ao resultado, migrações SQL versionadas e legíveis, sem engine binária. |
+| Acesso a dados | **Drizzle ORM** + `pg` (node-postgres) com `attachDatabasePool` da Vercel | Tipagem do schema ao resultado, migrações SQL versionadas. O `pg` é o driver suportado pelo `attachDatabasePool`, que fecha conexões ociosas antes de a função ser suspensa (sem isso, conexões “mortas” travavam requisições na Vercel). Conexão com SSL e timeouts curtos. |
 | Autenticação | **Própria** (scrypt + sessões no banco + cookie httpOnly) | Ver “Por que não Supabase Auth” abaixo. |
 | Pagamento | **Mercado Pago Checkout Pro** via API REST | Ver `docs/MERCADO_PAGO.md`. |
 | Imagens | `sharp` (WebP, 1600px + miniatura 480px, sem EXIF) + driver `local` ou `supabase` | Otimização no envio; armazenamento trocável por variável de ambiente. |

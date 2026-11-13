@@ -22,7 +22,7 @@ const NAV: (NavItem & { perm: Permission })[] = [
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const u = await requireStaffPage();
-  const [counts] = await db.execute<{ attention: number; reviews: number; tickets: number; toship: number }>(sql`
+  const { rows: [counts] } = await db.execute<{ attention: number; reviews: number; tickets: number; toship: number }>(sql`
     select (select count(*)::int from orders where attention_reason is not null) as attention,
            (select count(*)::int from reviews where status = 'pending') as reviews,
            (select count(*)::int from support_tickets where status in ('open','in_progress')) as tickets,

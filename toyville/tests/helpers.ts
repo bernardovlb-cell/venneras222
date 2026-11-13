@@ -6,7 +6,7 @@ import { seedBase } from "@/server/seed/base";
 import type { MpPayment } from "@/server/payments/mercadopago";
 
 export async function resetDb() {
-  const tables = await db.execute<{ tablename: string }>(sql`select tablename from pg_tables where schemaname = 'public' and tablename not like '\\_\\_%'`);
+  const { rows: tables } = await db.execute<{ tablename: string }>(sql`select tablename from pg_tables where schemaname = 'public' and tablename not like '\\_\\_%'`);
   const names = tables.map((t) => `"${t.tablename}"`).join(", ");
   await db.execute(sql.raw(`truncate ${names} restart identity cascade`));
   await seedBase(db);

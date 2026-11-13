@@ -35,7 +35,8 @@ export function isUniqueViolation(e: unknown, constraint?: string): boolean {
   for (let i = 0; i < 3 && err; i++) {
     const code = (err as { code?: string }).code;
     if (code === "23505") {
-      const c = (err as { constraint_name?: string }).constraint_name;
+      // node-postgres usa `constraint`; postgres-js usava `constraint_name`
+      const c = (err as { constraint?: string }).constraint ?? (err as { constraint_name?: string }).constraint_name;
       return !constraint || c === constraint;
     }
     err = (err as { cause?: unknown }).cause;

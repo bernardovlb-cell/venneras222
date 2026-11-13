@@ -5,11 +5,11 @@
  *  - Não usam fotos de produtos de terceiros (as imagens ficam vazias e o site mostra uma ilustração neutra).
  * Remova com `npm run db:purge-demo` antes de publicar.
  */
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq, sql } from "drizzle-orm";
 import * as schema from "../db/schema";
 
-type DB = PostgresJsDatabase<typeof schema>;
+type DB = NodePgDatabase<typeof schema>;
 
 interface DemoProduct {
   sku: string; name: string; cat: string; brand: string; min: number | null; max: number | null; short: string;

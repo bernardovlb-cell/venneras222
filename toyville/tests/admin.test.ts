@@ -145,7 +145,7 @@ describe("LGPD", () => {
     expect(after.passwordHash).toBeNull();
     expect(after.isActive).toBe(false);
     expect((await db.select().from(s.addresses).where(eq(s.addresses.userId, u.id))).length).toBe(0);
-    expect((await db.execute(sql`select count(*)::int as n from orders where user_id = ${u.id}`))[0].n).toBe(1);
+    expect((await db.execute<{ n: number }>(sql`select count(*)::int as n from orders where user_id = ${u.id}`)).rows[0].n).toBe(1);
   });
 });
 

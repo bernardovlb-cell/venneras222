@@ -7,7 +7,7 @@ import { CategoryEditor, BrandEditor } from "@/components/admin/CatalogEditors";
 
 export default async function CategoriesPage() {
   await requireStaffPage("products.read");
-  const [cats, brands, counts] = await Promise.all([
+  const [cats, brands, { rows: counts }] = await Promise.all([
     categoryOptions(), brandOptions(),
     db.execute<{ category_id: string; n: number }>(sql`select category_id, count(*)::int as n from products group by category_id`),
   ]);

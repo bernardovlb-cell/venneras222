@@ -27,7 +27,7 @@ function localDate(s: unknown): Date | null {
 export async function dashboard() {
   const since = new Date(Date.now() - 30 * 86400e3);
   const paidStatuses = ["paid", "completed"] as const;
-  const [[rev], [pend], [toShip], [canc], [refunds], top, lowStock, attention, recent, [revCount], [ticketsOpen]] = await Promise.all([
+  const [[rev], [pend], [toShip], [canc], { rows: [refunds] }, top, lowStock, attention, recent, [revCount], [ticketsOpen]] = await Promise.all([
     db.select({ total: sql<number>`coalesce(sum(${orders.totalCents}),0)::int`, n: sql<number>`count(*)::int` }).from(orders).where(and(inArray(orders.status, [...paidStatuses]), gte(orders.paidAt, since), eq(orders.isDemo, false))),
     db.select({ n: sql<number>`count(*)::int`, total: sql<number>`coalesce(sum(${orders.totalCents}),0)::int` }).from(orders).where(eq(orders.status, "pending_payment")),
     db.select({ n: sql<number>`count(*)::int` }).from(orders).where(and(eq(orders.status, "paid"), inArray(orders.fulfillmentStatus, ["unfulfilled", "picking", "ready_for_pickup"]))),
