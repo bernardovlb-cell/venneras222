@@ -1,6 +1,6 @@
 # Acompanhamento do projeto ToyVille
 
-Atualizado em 13/11/2026.
+Atualizado em 13/11/2026 (2ª rodada: auditoria Lighthouse, recuperação de carrinho, acessibilidade).
 
 ## Funcionalidades concluídas (interface + regra + banco + testes)
 
@@ -34,9 +34,10 @@ Atualizado em 13/11/2026.
 - Pedidos: filtros, detalhe, pagamentos, histórico, separação → retirada/envio → entrega, rastreamento, devolução com reposição, cancelamento de não pagos, reembolso, consulta ao Mercado Pago, dados fiscais e notas internas. **Sem opção de marcar como pago.**
 - Clientes (com auditoria de visualização), promoções e cupons, conteúdo (banners, seções, páginas), avaliações, atendimento, configurações (loja, marca, WhatsApp, diferenciais, checkout, entrega/retirada, fiscal, analytics, redes, SEO), integrações (mapeamento de SKUs, webhooks recebidos, caixa de e-mails), usuários e permissões por papel, auditoria.
 
+- Recuperação de carrinho: contato gravado só com consentimento no checkout (desmarcar apaga), um único lembrete por carrinho após o prazo configurado, rotina agendada protegida; **desativada por padrão** (Configurações > Checkout).
+
 ## Em implementação / parcial
 
-- Recuperação de carrinho: o e-mail só é guardado com consentimento; o envio depende do provedor de e-mail e da regra comercial.
 - E-mail transacional: implementado (Resend) e registrado na caixa de saída; não testado contra o serviço real.
 - Armazenamento Supabase: implementado, não testado contra o serviço real (local testado).
 
@@ -68,21 +69,29 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Logout por GET permitia deslogar a equipe a partir de outro site → apenas POST.
 - Driver `postgres` v4 não serializa `Date` em SQL bruto → trocado por operadores tipados.
 - Script de teste deixava servidor órfão na porta → encerramento do grupo de processos.
+- Recuperação de carrinho nunca dispararia (o e-mail só era salvo ao criar o pedido, quando o carrinho já não está abandonado) → contato salvo no consentimento do checkout.
+- Pedido sem consentimento mantinha no carrinho um e-mail gravado antes → agora é apagado.
+- Contraste insuficiente: selo de desconto vermelho sobre rosa (~4,4:1) e “Você economiza” em verde (~3,6:1) → tons escurecidos (≥ 6:1).
+- Requisição 404 de `/favicon.ico` (erro no console) → ícone vazio declarado até a aprovação do favicon.
+- Ordem de títulos nas listagens (h1 → h3) e falta de meta description em produtos sem resumo → corrigidos.
 
 ## Testes executados (13/11/2026)
 
 | Verificação | Resultado |
 |---|---|
 | `npm run typecheck` | sem erros |
-| `npm run lint` | sem erros |
-| `npm run build` | concluído (53 rotas) |
-| `npm test` — 78 testes (unidade + integração com PostgreSQL real) | 78 passaram |
+| `npm run lint` | sem erros e sem avisos |
+| `npm run build` | concluído |
+| `npm test` — 82 testes (unidade + integração com PostgreSQL real) | 82 passaram |
 | `npm run test:e2e` — 22 cenários no navegador (build de produção) | 22 passaram |
+| Lighthouse 13 (celular, rede lenta simulada, servidor local) | Desempenho 99–100 · Acessibilidade 100 · Boas práticas 100 · SEO 100 em início, produto, categoria, ofertas e guia de presentes. LCP 0,6–0,9 s, CLS ≤ 0,003. Exceções intencionais: busca e produtos [DEMO] marcados como não indexáveis |
+
+> Lighthouse local não mede a latência real da hospedagem nem imagens reais de produtos. Repetir em produção após o catálogo real (PageSpeed Insights / dados de campo do Chrome).
 
 Cobertura por tema: motor de preços e cupons (38 casos), assinatura do webhook, status do Mercado Pago, parser de importação; criação de pedido, snapshot de preço, idempotência, estoque insuficiente, **concorrência na última unidade**, **limite de cupom sob concorrência**, frete não configurado, entrega local por CEP, frete grátis; pagamento aprovado/pendente/recusado/divergente/duplicado/após cancelamento, expiração com reconciliação, reembolso, separação/entrega, controle de acesso ao pedido; webhook (assinatura válida, inválida, adulterada, ausente, repetida, falha do provedor, tópico ignorado); importação (criação, atualização segura, tudo-ou-nada, SKU de outro produto), estoque abaixo do reservado, variações, arquivamento, promoções inválidas, papéis e permissões, último proprietário, senhas, avaliações (pendente, duplicada, spam), anonimização LGPD.
 E2E: login da equipe (erro e sucesso), painel exige login, cliente recebe 404 no painel, configurar retirada, bloqueio de Correios sem integração, cadastro e publicação de produto, importação CSV com erro e com sucesso, busca com erro de digitação, rascunho com 404, carrinho/quantidade/cupom, limite de estoque, checkout de visitante até o Mercado Pago (simulado), URL de retorno falsificada não marca pago, webhook assinado/forjado/repetido, separação e retirada, cron protegido, cadastro sem perder dados, área do cliente, pedido alheio inacessível, ausência de rolagem horizontal em 375 px e 1366 px, sitemap e JSON-LD.
 
-**Não executado**: pagamentos no ambiente de teste real do Mercado Pago (sem rede para `api.mercadopago.com` e sem credenciais neste ambiente); envio real de e-mail; upload para Supabase Storage; auditoria Lighthouse/Core Web Vitals medida em produção; testes em Safari/Firefox reais (só Chromium, incluindo emulação de iPhone).
+**Não executado**: pagamentos no ambiente de teste real do Mercado Pago (sem rede para `api.mercadopago.com` e sem credenciais neste ambiente); envio real de e-mail; upload para Supabase Storage; Core Web Vitals em produção com dados reais; testes em Safari/Firefox reais (só Chromium, incluindo emulação de iPhone).
 
 ## Próximos passos sugeridos
 
@@ -90,6 +99,6 @@ E2E: login da equipe (erro e sucesso), painel exige login, cliente recebe 404 no
 2. Contratar banco (Supabase Pro) e hospedagem; publicar a versão de homologação.
 3. Preencher configurações, retirada/entrega e textos legais; aprovar políticas.
 4. Importar o catálogo real com fotos; remover dados de demonstração.
-5. Rodar Lighthouse em produção e ajustar o que for medido.
+5. Repetir a auditoria de desempenho em produção, já com fotos reais.
 6. Definir provedor de e-mail e ativar os envios.
 7. Depois do lançamento: frete por transportadora, integração fiscal, marketplaces.

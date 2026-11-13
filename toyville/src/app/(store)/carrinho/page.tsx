@@ -39,7 +39,7 @@ export default async function CartPage() {
                   <div className="text-sm">
                     {p.unitCents < p.listUnitCents && <s className="mr-2 text-muted">{formatBRL(p.listUnitCents)}</s>}
                     <span className={`font-extrabold ${p.unitCents < p.listUnitCents ? "text-promo" : ""}`}>{formatBRL(p.unitCents)}</span>
-                    {p.promotionLabel && <span className="chip ml-2 bg-soft-red text-promo">{p.promotionLabel}</span>}
+                    {p.promotionLabel && <span className="chip ml-2 bg-soft-red text-promo-ink">{p.promotionLabel}</span>}
                   </div>
                   {l.problem && (
                     <div className="mt-1 flex flex-wrap items-center gap-2">

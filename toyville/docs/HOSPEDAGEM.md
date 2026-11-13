@@ -49,8 +49,12 @@ Nada precisa ser contratado agora: o projeto roda localmente.
 npm ci && npm run build && npm run db:migrate && npm start
 ```
 
-Configure as mesmas variáveis, um proxy HTTPS e um agendador chamando a cada 30 min:
+Configure as mesmas variáveis, um proxy HTTPS e um agendador chamando a cada 30–60 min:
 
 ```bash
 curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://seu-dominio/api/cron/expire-orders
+```
+
+```bash
+curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://seu-dominio/api/cron/abandoned-carts
 ```

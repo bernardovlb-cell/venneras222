@@ -8,13 +8,13 @@ export function Price({ priceCents, listPriceCents, size = "md", showSavings = f
       {off > 0 && (
         <p className="text-sm text-muted">
           <span className="sr-only">Preço normal: </span><s>{formatBRL(listPriceCents)}</s>
-          <span className="ml-1.5 chip bg-soft-red !py-0.5 text-promo">-{off}%</span>
+          <span className="ml-1.5 chip bg-soft-red !py-0.5 text-promo-ink">-{off}%</span>
         </p>
       )}
       <p className={`font-display font-extrabold ${big} ${off > 0 ? "text-promo" : "text-ink"}`}>
         {off > 0 && <span className="sr-only">Preço promocional: </span>}{formatBRL(priceCents)}
       </p>
-      {showSavings && off > 0 && <p className="text-sm font-bold text-success">Você economiza {formatBRL(listPriceCents - priceCents)}</p>}
+      {showSavings && off > 0 && <p className="text-sm font-bold text-[#1d5e1d]">Você economiza {formatBRL(listPriceCents - priceCents)}</p>}
     </div>
   );
 }

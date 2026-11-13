@@ -19,6 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: { type: "website", siteName: s.store.name, locale: "pt_BR", images: [{ url: "/brand/logo-480.png", width: 480, height: 240, alt: s.store.name }] },
     twitter: { card: "summary_large_image" },
     formatDetection: { telephone: false },
+    // Favicon próprio depende de aprovação (docs/MARCA.md). Ícone vazio evita requisição 404 de /favicon.ico.
+    icons: { icon: "data:," },
   };
 }
 

@@ -183,6 +183,15 @@ try {
     await g.click("button:has-text('Ir para o pagamento')");
     await g.getByText("É preciso aceitar os termos").waitFor();
     await g.check("#acceptTerms input[type=checkbox]");
+    // consentimento de lembretes grava o contato no carrinho; desmarcar apaga
+    await g.getByText("lembretes do meu carrinho").click();
+    let saved = "";
+    for (let i = 0; i < 20 && saved !== "visitante@e2e.test|true"; i++) { await g.waitForTimeout(150); saved = execSync(`psql "${DB}" -tAc "select coalesce(email,'')||'|'||recovery_consent from carts where email is not null order by updated_at desc limit 1"`).toString().trim(); }
+    assert(saved === "visitante@e2e.test|true", `contato do carrinho: "${saved}"`);
+    await g.getByText("lembretes do meu carrinho").click();
+    let cleared = "";
+    for (let i = 0; i < 20 && cleared !== "0"; i++) { await g.waitForTimeout(150); cleared = execSync(`psql "${DB}" -tAc "select count(*) from carts where email = 'visitante@e2e.test' and converted_order_id is null"`).toString().trim(); }
+    assert(cleared === "0", "desmarcar deveria apagar o contato");
     await g.click("button:has-text('Ir para o pagamento')");
     await g.waitForURL(/localhost:4010\/checkout\?pref_id=/);
     prefId = new URL(g.url()).searchParams.get("pref_id");
@@ -236,6 +245,9 @@ try {
     assert((await fetch(`${BASE}/api/cron/expire-orders`)).status === 401, "sem segredo deveria ser 401");
     const ok = await fetch(`${BASE}/api/cron/expire-orders`, { headers: { authorization: "Bearer e2e-cron" } });
     assert(ok.status === 200, `cron: ${ok.status}`);
+    assert((await fetch(`${BASE}/api/cron/abandoned-carts`)).status === 401, "carrinhos sem segredo deveria ser 401");
+    const ac = await (await fetch(`${BASE}/api/cron/abandoned-carts`, { headers: { authorization: "Bearer e2e-cron" } })).json();
+    assert(ac.ok && ac.enabled === false, `lembretes devem vir desativados por padrão: ${JSON.stringify(ac)}`);
   });
 
   // ---------------- cliente com conta

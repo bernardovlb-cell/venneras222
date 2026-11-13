@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const img = d.images[0]?.url;
   return {
     title: p.seoTitle || p.name,
-    description: p.seoDescription || p.shortDescription || undefined,
+    description: p.seoDescription || p.shortDescription || [`${p.name}${d.brand ? `, da ${d.brand.name}` : ""}`, d.breadcrumb.length ? `em ${d.breadcrumb[d.breadcrumb.length - 1].name}` : "", "na ToyVille."].filter(Boolean).join(" "),
     alternates: { canonical: `/produto/${p.slug}` },
     robots: p.isDemo ? { index: false } : undefined,
     openGraph: { title: p.name, description: p.shortDescription ?? undefined, images: img ? [{ url: img }] : undefined, type: "website" },

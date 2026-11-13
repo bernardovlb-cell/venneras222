@@ -171,7 +171,7 @@ export async function placeOrder(rawInput: CheckoutInput, ctx: { cartId: string;
       }
       await tx.update(carts).set({
         convertedOrderId: o.id, updatedAt: new Date(),
-        email: input.marketingConsent ? input.email : cart.email, recoveryConsent: input.marketingConsent || cart.recoveryConsent,
+        email: input.marketingConsent ? input.email : null, recoveryConsent: input.marketingConsent,
       }).where(eq(carts.id, cart.id));
       await addEvent(tx, o.id, "created", `Pedido ${formatOrderNumber(o.number)} criado. Aguardando pagamento.`, { visible: true, userId: ctx.userId });
       return o.id;

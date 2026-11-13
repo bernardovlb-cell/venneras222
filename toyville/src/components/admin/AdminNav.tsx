@@ -38,6 +38,10 @@ export function AdminNav({ items, userName, roleName }: { items: NavItem[]; user
           <nav className="absolute inset-y-0 left-0 w-72 animate-slide-left overflow-y-auto bg-ink p-4">
             <div className="mb-4 flex items-center justify-between text-white"><span className="font-extrabold">Menu</span><button onClick={() => setOpen(false)} aria-label="Fechar" className="btn btn-ghost !px-2 text-white"><CloseIcon /></button></div>
             {list}
+            <div className="mt-4 border-t border-white/15 pt-3 text-xs text-white/70">
+              <p className="font-bold text-white">{userName}</p><p>{roleName}</p>
+              <form action="/admin/sair" method="post" className="mt-2"><button className="btn btn-outline btn-sm !border-white/40 !bg-transparent !text-white">Sair</button></form>
+            </div>
           </nav>
         </div>
       )}

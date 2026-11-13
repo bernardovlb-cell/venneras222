@@ -20,6 +20,7 @@
   --tv-soft-yellow: #fff6d6;
   --tv-soft-red: #fdecec;
   --tv-soft-green: #eaf6ea;
+  --tv-promo-ink: #b3141a; /* texto vermelho sobre fundos claros: contraste ~6:1 */
 }
 
 @theme inline {
@@ -27,6 +28,7 @@
   --color-primary-dark: var(--tv-primary-dark);
   --color-accent: var(--tv-accent);
   --color-promo: var(--tv-promo);
+  --color-promo-ink: var(--tv-promo-ink);
   --color-success: var(--tv-success);
   --color-cream: var(--tv-bg);
   --color-ink: var(--tv-ink);

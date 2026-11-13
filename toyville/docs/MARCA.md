@@ -22,7 +22,7 @@ Tipografia: **Baloo 2** (títulos, arredondada como as letras da logo) e **Nunit
 
 ## PROPOSTA — favicon e versão compacta (aguardando aprovação)
 
-Ainda **não implementada**, como pedido. Hoje o site não tem favicon próprio.
+Ainda **não implementada**, como pedido. Hoje o site declara um ícone vazio (evita erro 404 no navegador) até a sua aprovação.
 
 A logo completa fica ilegível em 16–48 px. Proposta:
 1. **Favicon / ícone de app**: o **ursinho** da logo, recortado da arte original, centralizado num quadrado de cantos arredondados com fundo azul `#1F4FD1` (ou branco). Tamanhos 32, 180 (Apple) e 512 px.

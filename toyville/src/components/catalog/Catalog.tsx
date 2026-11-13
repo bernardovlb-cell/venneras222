@@ -118,6 +118,7 @@ export async function Catalog({ sp, base = {}, basePath, hidden = {}, subcategor
         <FilterPanel activeCount={active}>{form}</FilterPanel>
       </div>
       <div>
+        <h2 className="sr-only">Produtos</h2>
         <p className="mb-3 hidden text-sm font-bold text-muted lg:block" aria-live="polite">{total} {total === 1 ? "produto encontrado" : "produtos encontrados"}</p>
         {items.length === 0 ? (
           <EmptyState title="Nenhum brinquedo encontrado" text={active ? "Tente remover alguns filtros." : filters.q ? `Não encontramos resultados para “${filters.q}”. Confira a ortografia ou use termos mais gerais.` : "Ainda não há produtos aqui."}

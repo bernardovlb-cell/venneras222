@@ -219,6 +219,7 @@ export const carts = pgTable("carts", {
   couponCode: text("coupon_code"),
   email: text("email"), // só preenchido com consentimento para recuperação
   recoveryConsent: boolean("recovery_consent").notNull().default(false),
+  recoverySentAt: ts("recovery_sent_at"), // lembrete de carrinho abandonado já enviado (no máximo 1 por carrinho)
   convertedOrderId: uuid("converted_order_id"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),

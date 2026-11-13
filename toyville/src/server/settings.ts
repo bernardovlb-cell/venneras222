@@ -47,6 +47,9 @@ export const settingsSchemas = {
     requireCpf: z.boolean().default(false),
     maxInstallments: z.number().int().min(1).max(12).default(12),
     termsVersion: z.string().max(40).default("rascunho-2026-11"),
+    // Recuperação de carrinho: desligada até o proprietário ativar (e só para quem consentiu)
+    cartRecoveryEnabled: z.boolean().default(false),
+    cartRecoveryHours: z.number().int().min(1).max(168).default(24),
   }),
   fiscal: z.object({
     provider: z.string().max(80).default(""), // nome do emissor informado pelo proprietário

@@ -88,5 +88,5 @@ createdb toyville_test && psql -d toyville_test -c "create extension if not exis
 - **Estoque**: ajuste por variação com motivo; todo movimento fica no histórico do produto.
 - **Pedidos**: só mudam para “pago” com confirmação do Mercado Pago. Separação, retirada, envio, cancelamento (não pagos) e reembolso pelo painel.
 - **Textos legais**: Painel > Conteúdo. Páginas com `[PENDENTE: …]` não podem ser publicadas.
-- **Agendamento**: `/api/cron/expire-orders` precisa rodar a cada 15–60 min (já configurado em `vercel.json` para a Vercel).
+- **Agendamentos** (já configurados em `vercel.json` para a Vercel): `/api/cron/expire-orders` a cada 15–60 min e `/api/cron/abandoned-carts` a cada hora, ambos com `Authorization: Bearer <CRON_SECRET>`.
 - **Backups**: ative backups automáticos no provedor do banco antes de vender.

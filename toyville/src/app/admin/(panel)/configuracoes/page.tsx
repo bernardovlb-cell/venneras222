@@ -90,6 +90,10 @@ export default async function SettingsPage() {
             <In label="Versão dos termos" name="termsVersion" value={s.checkout.termsVersion} />
           </div>
           <Ck label="Exigir CPF no checkout" name="requireCpf" checked={s.checkout.requireCpf} />
+          <div className="grid gap-3 rounded-xl bg-cream p-3 sm:grid-cols-2">
+            <Ck label="Enviar lembrete de carrinho abandonado (somente para quem consentiu no checkout)" name="cartRecoveryEnabled" checked={s.checkout.cartRecoveryEnabled} />
+            <In label="Enviar após (horas sem atividade)" name="cartRecoveryHours" value={s.checkout.cartRecoveryHours} type="number" data-num min={1} max={168} hint="Um único lembrete por carrinho; requer provedor de e-mail" />
+          </div>
         </SettingsForm>
       </Panel>
 

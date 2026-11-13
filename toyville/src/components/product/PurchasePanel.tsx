@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addToCartAction } from "@/app/actions/cart";
 import { useToast } from "../ui/Toast";
@@ -32,7 +32,12 @@ export function PurchasePanel({ productId, name, variants, images, favorited, ch
   const v = variants.find((x) => x.id === variantId) ?? firstAvailable;
   const hasOptions = optionNames.length > 0 && variants.length > 1;
 
-  useEffect(() => { track("view_item", { value: v.priceCents / 100, items: [{ id: v.sku, name, price: v.priceCents / 100, quantity: 1 }] }); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (viewed.current) return;
+    viewed.current = true;
+    track("view_item", { value: v.priceCents / 100, items: [{ id: v.sku, name, price: v.priceCents / 100, quantity: 1 }] });
+  }, [v.priceCents, v.sku, name]);
 
   function choose(opt: string, value: string) {
     const next = { ...selected, [opt]: value };

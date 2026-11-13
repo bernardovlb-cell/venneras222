@@ -15,6 +15,13 @@
       "when": 1794540058182,
       "tag": "0001_search_and_security",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794567352574,
+      "tag": "0002_cart_recovery",
+      "breakpoints": true
     }
   ]
 }

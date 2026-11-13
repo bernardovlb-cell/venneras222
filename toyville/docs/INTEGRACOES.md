@@ -10,7 +10,7 @@
 | E-mail transacional | Resend implementado, **não testado com a API real** | Conta, domínio verificado (SPF/DKIM), `RESEND_API_KEY`. Sem isso os e-mails ficam na caixa de saída do painel |
 | Emissor de NF-e | **Contrato preparado** (`src/server/integrations/fiscal.ts`), emissão automática bloqueada | Nome do emissor usado pela loja e acesso à API dele. Até lá, registre manualmente número/chave/link da nota no pedido |
 | Google Analytics 4 / Tag Manager / Meta Pixel | **Implementados com consentimento** | IDs no painel (Configurações > Marketing) |
-| Recuperação de carrinho | **Parcial**: o e-mail só é guardado com consentimento | Provedor de e-mail e regra de envio (ex.: 24 h após abandono), a definir |
+| Recuperação de carrinho | **Implementada**, desativada por padrão; só para quem consentiu; 1 lembrete por carrinho | Provedor de e-mail e ativação em Configurações > Checkout |
 | Mercado Livre | Contrato + mapeamento de SKUs no painel | Aplicação no DevCenter, OAuth do vendedor, assinatura dos tópicos `orders_v2` e `items` |
 | Amazon | Contrato + mapeamento | Conta de vendedor profissional, registro na SP-API, autorização do aplicativo |
 | Shopee | Contrato + mapeamento | Shopee Open Platform (partner_id/partner_key) e autorização da loja |

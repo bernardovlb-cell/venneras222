@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { quoteShippingAction, previewTotalsAction, placeOrderAction, type QuoteOption } from "@/app/actions/checkout";
+import { quoteShippingAction, previewTotalsAction, placeOrderAction, saveCartContactAction, type QuoteOption } from "@/app/actions/checkout";
 import { Summary } from "../cart/Summary";
 import { Notice } from "../ui/States";
 import { formatBRL } from "@/lib/money";
@@ -66,6 +66,12 @@ export function CheckoutForm(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipping]);
 
+  // Consentimento de lembretes: grava o contato no carrinho só quando marcado (e apaga ao desmarcar).
+  function syncContact(nextConsent: boolean, nextEmail = email) {
+    if (nextConsent && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(nextEmail.trim())) return;
+    void saveCartContactAction(nextEmail, nextConsent);
+  }
+
   const deliveryOptions = useMemo(() => options?.filter((o) => o.requiresAddress) ?? [], [options]);
   const pickupOptions = useMemo(() => options?.filter((o) => !o.requiresAddress) ?? [], [options]);
 
@@ -104,7 +110,7 @@ export function CheckoutForm(props: {
           <h2 id="s1" className="flex items-center gap-2 text-xl font-extrabold"><span className="grid size-7 place-items-center rounded-full bg-primary text-sm text-white">1</span> Seus dados</h2>
           {!props.user && <p className="mt-1 text-sm text-muted">Compre sem cadastro ou <Link href="/conta/entrar?next=/checkout" className="font-bold text-primary underline">entre na sua conta</Link>.</p>}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2"><label className="label" htmlFor="email">E-mail</label><input id="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="field" {...inv("email")} />{err("email")}</div>
+            <div className="sm:col-span-2"><label className="label" htmlFor="email">E-mail</label><input id="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => marketing && syncContact(true)} className="field" {...inv("email")} />{err("email")}</div>
             <div><label className="label" htmlFor="name">Nome completo</label><input id="name" autoComplete="name" required value={name} onChange={(e) => setName(e.target.value)} className="field" {...inv("name")} />{err("name")}</div>
             <div><label className="label" htmlFor="phone">Celular com DDD</label><input id="phone" type="tel" autoComplete="tel-national" inputMode="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="field" placeholder="(11) 98888-7777" {...inv("phone")} />{err("phone")}</div>
             <div><label className="label" htmlFor="cpf">CPF {props.requireCpf ? "" : <span className="font-normal text-muted">(opcional, para nota fiscal)</span>}</label><input id="cpf" inputMode="numeric" autoComplete="off" value={cpf} onChange={(e) => setCpf(e.target.value)} className="field" placeholder="000.000.000-00" {...inv("cpf")} />{err("cpf")}</div>
@@ -196,8 +202,8 @@ export function CheckoutForm(props: {
             </label>
             {err("acceptTerms")}
             <label className="flex items-start gap-2">
-              <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="mt-0.5 size-5 accent-[var(--tv-primary)]" />
-              <span className="text-muted">Quero receber novidades e ofertas por e-mail (opcional).</span>
+              <input type="checkbox" checked={marketing} onChange={(e) => { setMarketing(e.target.checked); syncContact(e.target.checked); }} className="mt-0.5 size-5 accent-[var(--tv-primary)]" />
+              <span className="text-muted">Quero receber novidades, ofertas e lembretes do meu carrinho por e-mail (opcional).</span>
             </label>
           </div>
         </section>

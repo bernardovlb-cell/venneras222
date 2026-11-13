@@ -14,6 +14,7 @@ import { carts, orders } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { sha256 } from "@/server/auth/password";
 import * as mp from "@/server/payments/mercadopago";
+import { saveCartContact } from "@/server/services/cart-recovery";
 import type { PricingResult } from "@/lib/pricing";
 
 async function cartContext() {
@@ -57,6 +58,20 @@ export async function previewTotalsAction(shippingCode: string | null, address: 
     }
     const { pricing } = await computePricing({ items, couponCode: cart.couponCode, email: email || u?.email || null, userId: u?.id ?? null, shippingQuoteCents: quoteCents, shippingIsPaidMethod: (quoteCents ?? 0) > 0 });
     return { ok: true, data: pricing };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+/** Grava (ou apaga) o contato do carrinho para lembretes, conforme o consentimento marcado no checkout. */
+export async function saveCartContactAction(email: string, consent: boolean): Promise<ActionResult> {
+  try {
+    const { ip } = await requestMeta();
+    await enforceRateLimit(`cart-contact:${ip}`, 30, 600);
+    const cartId = await readCartId();
+    if (!cartId) return { ok: true };
+    await saveCartContact(cartId, email, consent);
+    return { ok: true };
   } catch (e) {
     return toActionError(e);
   }

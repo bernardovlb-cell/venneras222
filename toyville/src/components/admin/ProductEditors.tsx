@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AdminForm, F, Check, ActionButton } from "./ui";
 import { saveVariantAction, deleteVariantAction, adjustStockAction, uploadImagesAction, imageOpAction, imageAltAction, replaceImageAction, deleteProductAction } from "@/app/admin/actions";
@@ -127,8 +128,9 @@ export function ImagesEditor({ productId, images }: { productId: string; images:
 }
 
 export function DeleteProduct({ productId }: { productId: string }) {
+  const router = useRouter();
   return (
     <ActionButton action={() => deleteProductAction(productId)} confirm="Excluir este produto? Se ele já tiver vendas, será arquivado (os pedidos mantêm o histórico)."
-      className="btn btn-ghost btn-sm text-promo" onDone={(r) => { if (r.ok) window.location.assign("/admin/produtos"); }}>Excluir / arquivar produto</ActionButton>
+      className="btn btn-ghost btn-sm text-promo" onDone={(r) => { if (r.ok) router.push("/admin/produtos"); }}>Excluir / arquivar produto</ActionButton>
   );
 }

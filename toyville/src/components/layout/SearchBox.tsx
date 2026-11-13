@@ -2,6 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { SearchIcon } from "../icons";
 import { formatBRL } from "@/lib/money";
 
@@ -88,7 +89,7 @@ export function SearchBox({ initial = "", autoFocus = false }: { initial?: strin
             <Link key={p.slug} id={`${listId}-${i}`} role="option" aria-selected={active === i} href={`/produto/${p.slug}`} onClick={() => setOpen(false)}
               className={`flex items-center gap-3 rounded-xl p-2 ${active === i ? "bg-soft-blue" : "hover:bg-cream"}`}>
               <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-soft-yellow">
-                {p.imageUrl ? <img src={p.imageUrl} alt="" className="size-full object-cover" loading="lazy" /> : <span aria-hidden>🧸</span>}
+                {p.imageUrl ? <Image src={p.imageUrl} alt="" width={44} height={44} className="size-full object-cover" /> : <span aria-hidden>🧸</span>}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-bold">{p.name}</span>

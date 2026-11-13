@@ -38,7 +38,7 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
             </div>
             <div className="grid grid-cols-2 gap-2 p-4">
               <Link href="/presentes" className="flex items-center gap-2 rounded-2xl bg-soft-yellow p-3 text-sm font-extrabold"><GiftIcon size={20} /> Guia de presentes</Link>
-              <Link href="/ofertas" className="flex items-center gap-2 rounded-2xl bg-soft-red p-3 text-sm font-extrabold text-promo"><BoltIcon size={18} /> Ofertas</Link>
+              <Link href="/ofertas" className="flex items-center gap-2 rounded-2xl bg-soft-red p-3 text-sm font-extrabold text-promo-ink"><BoltIcon size={18} /> Ofertas</Link>
             </div>
             <p className="px-4 pb-1 text-xs font-extrabold uppercase tracking-wider text-muted">Categorias</p>
             <ul className="px-2">
