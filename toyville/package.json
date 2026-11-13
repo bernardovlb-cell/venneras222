@@ -1,0 +1,48 @@
+{
+  "name": "toyville",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "node e2e/run.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:seed-demo": "tsx scripts/seed-demo.ts",
+    "db:purge-demo": "tsx scripts/purge-demo.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "brand:logo": "tsx scripts/optimize-logo.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "exceljs": "^4.4.0",
+    "next": "^16.4.6",
+    "papaparse": "^5.7.1",
+    "postgres": "^4.1.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.6",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.0"
+  }
+}
