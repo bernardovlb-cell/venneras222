@@ -1,6 +1,6 @@
 # Acompanhamento do projeto ToyVille
 
-Atualizado em 13/11/2026 (3ª rodada: refinamento visual “ToyVille 2.0” — ver `docs/DIRECAO-DE-ARTE.md`).
+Atualizado em 13/11/2026 (3ª rodada: refinamento visual — ver `docs/DIRECAO-DE-ARTE.md`).
 
 ## Funcionalidades concluídas (interface + regra + banco + testes)
 
@@ -36,12 +36,9 @@ Atualizado em 13/11/2026 (3ª rodada: refinamento visual “ToyVille 2.0” — 
 
 - Recuperação de carrinho: contato gravado só com consentimento no checkout (desmarcar apaga), um único lembrete por carrinho após o prazo configurado, rotina agendada protegida; **desativada por padrão** (Configurações > Checkout).
 
-**Identidade visual (ToyVille 2.0)** — conceito “a vila dos brinquedos” (`docs/DIRECAO-DE-ARTE.md`)
-- Ilustrações próprias em SVG no estilo de brinquedo 3D da logo (11 brinquedos + cena do castelo no hero); categorias ganham ilustração automática pelo nome e usam a foto enviada no painel quando houver.
-- Home: hero com cena animada e atalhos por idade; campanhas cadastradas viram slides com a mesma composição; categorias como “casinhas” (rua deslizante no celular); vitrines com sobretítulos, relâmpago com contagem e layout próprio para poucos itens; guia de presentes por toques (idade ilustrada, orçamento e interesse); aviso de “vitrine em montagem” enquanto não há produtos.
-- Cabeçalho: toldo festonado, busca em destaque, menu “Todas as categorias” com ilustrações (a barra não quebra mais em duas linhas), carrinho destacado; menu do celular com atalhos e ilustrações.
-- Cards de produto: vitrine com fundo suave (foto em multiply), selo de desconto, marca, faixa etária, preço com hierarquia; rodapé com silhueta da vila; páginas de categoria com cabeçalho ilustrado.
-- Movimento: flutuação das ilustrações e entrada das seções por rolagem (CSS, sem JavaScript), desligados com “reduzir movimento”.
+**Identidade visual** — linha "varejo profissional" (`docs/DIRECAO-DE-ARTE.md`; a proposta ilustrada anterior foi rejeitada por parecer gerada por IA)
+- Home: grade de banners (marca ou campanhas do painel + atalhos para guia de presentes e ofertas/novidades), compra por idade, categorias com ícones de traço (ou foto do painel), vitrines com títulos simples, guia de presentes por toques, aviso de "Catálogo em cadastro" enquanto não há produtos.
+- Cabeçalho com busca em destaque e menu "Todas as categorias" (a barra não quebra mais em duas linhas); menu do celular com atalhos e ícones; cards de produto com borda, selo de desconto retangular e espaço neutro de "Foto em breve"; tipografia única (Nunito).
 
 ## Em implementação / parcial
 
@@ -85,7 +82,7 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Contraste insuficiente: selo de desconto vermelho sobre rosa (~4,4:1) e “Você economiza” em verde (~3,6:1) → tons escurecidos (≥ 6:1).
 - Requisição 404 de `/favicon.ico` (erro no console) → ícone vazio declarado até a aprovação do favicon.
 - Ordem de títulos nas listagens (h1 → h3) e falta de meta description em produtos sem resumo → corrigidos.
-- Refinamento visual: grid do hero crescia além da tela no celular (título e botões cortados, sem rolagem horizontal aparente) → colunas `minmax(0,1fr)` e novo teste E2E que procura conteúdo cortado; barra de categorias do desktop quebrava em duas linhas → menu “Todas as categorias”; fundo translúcido do cabeçalho revelava o retângulo branco da logo → fundo sólido; duas caixas de busca na mesma página repetiam o id `busca` → id único; sobretítulos amarelos sobre azul/vermelho (3,1–4,2:1) e marca do card (4,4:1) → tons com contraste ≥ 4,5:1; ilustrações em linha triplicavam o HTML da home → arquivos SVG estáticos em cache (`npm run art`, com teste de sincronia).
+- Refinamento visual: grid do hero crescia além da tela no celular (título e botões cortados, sem rolagem horizontal aparente) → colunas `minmax(0,1fr)` e novo teste E2E que procura conteúdo cortado; barra de categorias do desktop quebrava em duas linhas → menu “Todas as categorias”; duas caixas de busca na mesma página repetiam o id `busca` → id único; “Os queridinhos da ToyVille” aparecia mesmo sem vendas → subtítulo de popularidade só com vendas reais; contraste de rótulos conferido (≥ 4,5:1).
 
 ## Testes executados (13/11/2026, após o refinamento visual)
 
@@ -94,7 +91,7 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 | `npm run typecheck` | sem erros |
 | `npm run lint` | sem erros e sem avisos |
 | `npm run build` | concluído |
-| `npm test` — 95 testes (unidade + integração com PostgreSQL real + sincronia das ilustrações) | 95 passaram |
+| `npm test` — 83 testes (unidade + integração com PostgreSQL real) | 83 passaram |
 | `npm run test:e2e` — 25 cenários no navegador (build de produção) | 25 passaram |
 | Lighthouse 13 (celular, rede lenta simulada, servidor local, com dados de demonstração) | Início: desempenho mediana 99 em 5 execuções (93 na primeira, servidor frio), TBT 50–140 ms, LCP 0,8 s, CLS 0. Guia de presentes 96, categoria 100, produto 99. Acessibilidade 100 e boas práticas 100 em todas. SEO 100 (produto [DEMO] fica não indexável de propósito) |
 | axe-core (WCAG 2 A/AA + boas práticas), celular e desktop | início, presentes, resultado do guia, categoria, busca e produto sem violações |

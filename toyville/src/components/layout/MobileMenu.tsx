@@ -4,9 +4,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MenuIcon, CloseIcon, ChevronDown, GiftIcon, UserIcon, HeartIcon, ChatIcon, BoltIcon, StarIcon } from "../icons";
-import { CategoryArt } from "../art/ToyArt";
-
-const TONE = ["bg-soft-blue", "bg-soft-yellow", "bg-soft-green", "bg-[#ffeadb]"];
+import { CategoryIcon } from "../catalog/CategoryIcon";
 
 type Cat = { id: string; name: string; slug: string; children: { id: string; name: string; slug: string }[] };
 
@@ -38,22 +36,22 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           <nav className="absolute inset-y-0 left-0 flex w-[86%] max-w-sm animate-slide-left flex-col overflow-y-auto bg-white shadow-pop">
-            <div className="tv-stars flex items-center justify-between bg-primary px-4 py-3 text-white">
-              <span className="font-display text-xl font-extrabold">Menu</span>
-              <button ref={closeRef} type="button" onClick={() => setOpen(false)} className="btn !min-h-[40px] !px-2.5 text-white hover:bg-white/15" aria-label="Fechar menu"><CloseIcon /></button>
+            <div className="flex items-center justify-between border-b border-line px-4 py-3">
+              <span className="text-lg font-extrabold">Menu</span>
+              <button ref={closeRef} type="button" onClick={() => setOpen(false)} className="btn btn-ghost !min-h-[40px] !px-2.5" aria-label="Fechar menu"><CloseIcon /></button>
             </div>
             <div className="grid grid-cols-3 gap-2 p-4">
-              <Link href="/presentes" className="flex flex-col items-center gap-1 rounded-2xl bg-soft-yellow p-3 text-center text-[13px] font-extrabold leading-tight shadow-[0_3px_0_#f0dc9a]"><GiftIcon size={22} /> Presentes</Link>
-              <Link href="/ofertas" className="flex flex-col items-center gap-1 rounded-2xl bg-soft-red p-3 text-center text-[13px] font-extrabold leading-tight text-promo-ink shadow-[0_3px_0_#f4c9c9]"><BoltIcon size={20} /> Ofertas</Link>
-              <Link href="/busca?ordem=newest" className="flex flex-col items-center gap-1 rounded-2xl bg-soft-blue p-3 text-center text-[13px] font-extrabold leading-tight text-primary-dark shadow-[0_3px_0_#cfdcfb]"><StarIcon size={20} /> Lançamentos</Link>
+              <Link href="/presentes" className="flex flex-col items-center gap-1 rounded-xl bg-soft-yellow p-3 text-center text-[13px] font-extrabold leading-tight"><GiftIcon size={22} /> Presentes</Link>
+              <Link href="/ofertas" className="flex flex-col items-center gap-1 rounded-xl bg-soft-red p-3 text-center text-[13px] font-extrabold leading-tight text-promo-ink"><BoltIcon size={20} /> Ofertas</Link>
+              <Link href="/busca?ordem=newest" className="flex flex-col items-center gap-1 rounded-xl bg-soft-blue p-3 text-center text-[13px] font-extrabold leading-tight text-primary-dark"><StarIcon size={20} filled={false} /> Lançamentos</Link>
             </div>
             <p className="px-4 pb-1 text-xs font-extrabold uppercase tracking-wider text-muted">Categorias</p>
             <ul className="px-2">
-              {categories.map((c, i) => (
+              {categories.map((c) => (
                 <li key={c.id}>
                   <div className="flex items-center">
                     <Link href={`/c/${c.slug}`} className="flex flex-1 items-center gap-3 rounded-xl px-2 py-1.5 text-[15px] font-bold hover:bg-cream">
-                      <span aria-hidden className={`grid size-11 shrink-0 place-items-center rounded-xl ${TONE[i % TONE.length]}`}><CategoryArt slug={c.slug} className="size-10" /></span>
+                      <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-lg bg-soft-blue text-primary"><CategoryIcon slug={c.slug} size={20} /></span>
                       {c.name}
                     </Link>
                     {c.children.length > 0 && (

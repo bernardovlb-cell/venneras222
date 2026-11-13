@@ -18,8 +18,7 @@
     "db:purge-demo": "tsx scripts/purge-demo.ts",
     "admin:create": "tsx scripts/create-admin.ts",
     "brand:logo": "tsx scripts/optimize-logo.ts",
-    "vercel-build": "tsx scripts/migrate.ts && tsx scripts/seed.ts && next build",
-    "art": "tsx scripts/build-art.tsx"
+    "vercel-build": "tsx scripts/migrate.ts && tsx scripts/seed.ts && next build"
   },
   "dependencies": {
     "@vercel/functions": "^3.11.2",

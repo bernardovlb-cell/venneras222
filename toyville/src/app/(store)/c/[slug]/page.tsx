@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCategoryBySlug } from "@/server/services/catalog";
 import { Catalog, type SP } from "@/components/catalog/Catalog";
 import { Breadcrumb } from "@/components/ui/States";
-import { CategoryArt } from "@/components/art/ToyArt";
+import { CategoryIcon } from "@/components/catalog/CategoryIcon";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<SP> };
 
@@ -21,13 +21,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   return (
     <div className="container-tv py-6">
       <Breadcrumb items={[{ name: "Início", href: "/" }, ...c.breadcrumb.map((b, i) => (i === c.breadcrumb.length - 1 ? { name: b.name } : { name: b.name, href: `/c/${b.slug}` }))]} />
-      <div className="tv-hero-bg relative mt-3 flex items-center justify-between gap-4 overflow-hidden rounded-[2rem] px-5 py-5 ring-1 ring-line/60 sm:px-10 sm:py-7">
+      <div className="mt-3 flex items-center gap-4">
+        <span className="hidden size-14 shrink-0 place-items-center rounded-2xl bg-soft-blue text-primary sm:grid"><CategoryIcon slug={c.category.slug} size={30} /></span>
         <div className="min-w-0">
-          <p className="eyebrow">Categoria</p>
-          <h1 className="text-[2rem] font-extrabold leading-[1.02] text-primary-dark sm:text-5xl">{c.category.name}</h1>
-          {c.category.description && <p className="mt-2 max-w-xl text-muted sm:text-lg">{c.category.description}</p>}
+          <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">{c.category.name}</h1>
+          {c.category.description && <p className="mt-1 text-muted">{c.category.description}</p>}
         </div>
-        <CategoryArt slug={c.category.slug} className="tv-float size-24 shrink-0 sm:size-36" />
       </div>
       <div className="mt-6">
         <Catalog sp={await searchParams} base={{ categoryId: c.category.id }} basePath={`/c/${slug}`} subcategories={c.children.map((x) => ({ slug: x.slug, name: x.name }))} />

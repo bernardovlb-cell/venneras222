@@ -8,42 +8,35 @@ import { QuickAdd, FavoriteButton } from "./CardActions";
 import { formatAgeRange } from "@/lib/age";
 import { discountPercent } from "@/lib/money";
 
-/** Fundo suave da "vitrine" de cada card (estável por produto). A foto usa multiply: fundo branco da foto some no tom. */
-const TINTS = ["bg-[#f1f5ff]", "bg-[#fff7e0]", "bg-[#eef8ee]", "bg-[#fbf4ea]"];
-function tintFor(id: string) {
-  let h = 0;
-  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return TINTS[h % TINTS.length];
-}
 
 export function ProductCard({ p, favorited = false, priority = false }: { p: Card; favorited?: boolean; priority?: boolean }) {
   const age = formatAgeRange(p.minAgeMonths, p.maxAgeMonths);
   const off = discountPercent(p.listPriceCents, p.priceCents);
   const onSale = off > 0;
   return (
-    <article className="group relative flex h-full flex-col rounded-[1.5rem] bg-white p-1.5 shadow-card ring-1 ring-line/70 transition duration-300 hover:-translate-y-1 hover:shadow-pop focus-within:ring-2 focus-within:ring-primary sm:p-2">
-      <div className={`relative aspect-square overflow-hidden rounded-[1.15rem] ${tintFor(p.id)}`}>
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:border-primary/30 hover:shadow-card focus-within:ring-2 focus-within:ring-primary">
+      <div className="relative aspect-square overflow-hidden bg-[#f6f5f1]">
         <Link href={`/produto/${p.slug}`} tabIndex={-1} aria-hidden className="absolute inset-0">
           <ProductImage src={p.imageUrl} alt={p.imageAlt} sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" priority={priority}
-            className="p-3 mix-blend-multiply transition duration-500 group-hover:scale-[1.06]" />
+            className="p-4 mix-blend-multiply transition duration-300 group-hover:scale-[1.04]" />
         </Link>
         <div className="pointer-events-none absolute left-2 top-2 flex flex-col items-start gap-1.5">
-          {onSale && <span className="tv-sticker" aria-hidden>-{off}%</span>}
-          {p.promotionLabel && onSale && <span className="chip bg-white text-promo-ink shadow-card">{p.promotionLabel}</span>}
+          {onSale && <span className="rounded-md bg-promo px-2 py-1 text-xs font-extrabold leading-none text-white" aria-hidden>-{off}%</span>}
+          {p.promotionLabel && onSale && <span className="rounded-md bg-white px-2 py-1 text-xs font-extrabold leading-none text-promo-ink">{p.promotionLabel}</span>}
         </div>
         {!p.inStock && (
-          <span className="pointer-events-none absolute inset-x-2 bottom-2 rounded-full bg-ink/85 py-1.5 text-center text-xs font-extrabold text-white">Esgotado</span>
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-ink/80 py-1.5 text-center text-xs font-extrabold text-white">Esgotado</span>
         )}
         <FavoriteButton productId={p.id} initial={favorited} className="absolute right-2 top-2 z-10" />
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 px-1.5 pb-1.5 pt-3 sm:px-2">
-        {p.brandName && <p className="truncate text-[11px] font-extrabold uppercase tracking-wider text-primary">{p.brandName}</p>}
+      <div className="flex flex-1 flex-col gap-1.5 p-3 sm:p-3.5">
+        {p.brandName && <p className="truncate text-[11px] font-bold uppercase tracking-wider text-muted">{p.brandName}</p>}
         <h3 className="line-clamp-2 min-h-[2.6em] text-[15px] font-bold leading-snug text-ink">
-          <Link href={`/produto/${p.slug}`} className="after:absolute after:inset-0 after:rounded-[1.5rem] after:content-['']">{p.name}</Link>
+          <Link href={`/produto/${p.slug}`} className="after:absolute after:inset-0 after:content-['']">{p.name}</Link>
         </h3>
         {(age || p.ratingAvg != null) && (
           <div className="flex flex-wrap items-center gap-2">
-            {age && <span className="chip whitespace-nowrap bg-soft-yellow !text-[11.5px] text-ink">{age}</span>}
+            {age && <span className="whitespace-nowrap rounded-md bg-soft-blue px-2 py-0.5 text-[11.5px] font-bold text-primary-dark">{age}</span>}
             {p.ratingAvg != null && <Rating value={p.ratingAvg} count={p.ratingCount} size={12} />}
           </div>
         )}

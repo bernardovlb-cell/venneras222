@@ -3,19 +3,17 @@ import { getSettings, whatsappLink } from "@/server/settings";
 import { getNavCategories } from "@/server/services/catalog";
 import { Logo } from "../Logo";
 import { CookiePreferencesLink } from "../consent/CookiePreferencesLink";
-import { Skyline } from "../art/Decor";
 
 export async function Footer() {
   const [s, cats] = await Promise.all([getSettings(), getNavCategories()]);
   const wa = whatsappLink(s.whatsapp);
   const socials = Object.entries(s.social).filter(([, v]) => v);
   return (
-    <footer className="mt-20 text-white">
-      <Skyline className="block h-14 w-full text-primary-dark sm:h-20" />
-      <div className="bg-primary-dark">
+    <footer className="mt-20 bg-primary-dark text-white">
+      <div>
       <div className="container-tv grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="inline-block rounded-[1.4rem] bg-white p-2.5 shadow-[0_4px_0_rgba(0,0,0,.18)]"><Logo src={s.brand.logoUrl} width={s.brand.logoWidth} height={s.brand.logoHeight} className="w-[150px]" /></div>
+          <div className="inline-block rounded-xl bg-white p-2"><Logo src={s.brand.logoUrl} width={s.brand.logoWidth} height={s.brand.logoHeight} className="w-[140px]" /></div>
           {s.store.tagline && <p className="mt-3 max-w-xs text-sm text-white/80">{s.store.tagline}</p>}
         </div>
         <div>

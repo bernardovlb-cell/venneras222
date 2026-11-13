@@ -353,8 +353,8 @@ try {
     const p = await ctx.newPage();
     await p.goto(BASE + "/");
     const form = p.locator("form[action='/presentes']");
-    await form.locator("label", { hasText: "3 e 4 anos" }).click();
-    await form.locator("label", { hasText: "R$ 50 a R$ 100" }).click();
+    await form.locator("label:has(input[value='3-4'])").click();
+    await form.locator("label:has(input[value='50-100'])").click();
     await form.locator("button[type=submit]").click();
     await p.waitForURL(/\/presentes\?/);
     const u = new URL(p.url());

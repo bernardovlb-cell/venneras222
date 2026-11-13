@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Nunito } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { getSettings } from "@/server/settings";
 import { env } from "@/server/env";
 import "./globals.css";
 
-const baloo = Baloo_2({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-baloo", display: "swap" });
-const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600", "700", "800"], variable: "--font-nunito", display: "swap" });
+const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600", "700", "800", "900"], variable: "--font-nunito", display: "swap" });
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Cores configuráveis no painel (validadas como #RRGGBB no servidor antes de salvar).
   const tokens = `:root{--tv-primary:${brand.primary};--tv-primary-dark:${brand.primaryDark};--tv-accent:${brand.accent};--tv-promo:${brand.promo};--tv-success:${brand.success};--tv-bg:${brand.background}}`;
   return (
-    <html lang="pt-BR" className={`${baloo.variable} ${nunito.variable}`}>
+    <html lang="pt-BR" className={nunito.variable}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: tokens }} />
       </head>

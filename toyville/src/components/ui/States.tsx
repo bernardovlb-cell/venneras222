@@ -1,10 +1,17 @@
 import Link from "next/link";
+import { SearchIcon, BoxIcon, ChatIcon, HeartIcon, GiftIcon, CartIcon, ChevronRight } from "../icons";
 
-export function EmptyState({ title, text, action, emoji = "🧸" }: { title: string; text?: string; action?: { href: string; label: string }; emoji?: string }) {
+const EMPTY_ICONS: Record<string, (p: { size?: number }) => React.ReactNode> = {
+  "🔎": SearchIcon, "📦": BoxIcon, "💬": ChatIcon, "💛": HeartIcon, "🎁": GiftIcon, "🛒": CartIcon,
+};
+
+/** Estado vazio. `emoji` é mantido por compatibilidade e mapeado para um ícone de traço. */
+export function EmptyState({ title, text, action, emoji = "📦" }: { title: string; text?: string; action?: { href: string; label: string }; emoji?: string }) {
+  const Icon = EMPTY_ICONS[emoji] ?? BoxIcon;
   return (
-    <div className="card mx-auto flex max-w-lg flex-col items-center gap-3 p-8 text-center">
-      <span aria-hidden className="grid size-20 place-items-center rounded-full bg-soft-yellow text-4xl">{emoji}</span>
-      <h2 className="text-2xl font-extrabold">{title}</h2>
+    <div className="mx-auto flex max-w-lg flex-col items-center gap-3 rounded-2xl border border-line bg-white p-8 text-center">
+      <span aria-hidden className="grid size-16 place-items-center rounded-2xl bg-soft-blue text-primary"><Icon size={30} /></span>
+      <h2 className="text-2xl font-extrabold tracking-tight">{title}</h2>
       {text && <p className="text-muted">{text}</p>}
       {action && <Link href={action.href} className="btn btn-primary mt-2">{action.label}</Link>}
     </div>
@@ -16,25 +23,19 @@ export function Notice({ kind = "info", children }: { kind?: "info" | "warn" | "
   return <div role={kind === "error" ? "alert" : "status"} className={`rounded-2xl px-4 py-3 text-sm font-semibold ${cls}`}>{children}</div>;
 }
 
-export function SectionTitle({ title, subtitle, href, linkLabel = "Ver todos", eyebrow, light = false }: {
-  title: string; subtitle?: string | null; href?: string; linkLabel?: string; eyebrow?: string; light?: boolean;
+export function SectionTitle({ title, subtitle, href, linkLabel = "Ver todos", id }: {
+  title: string; subtitle?: string | null; href?: string; linkLabel?: string; id?: string;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4 sm:mb-7">
+    <div className="mb-4 flex items-end justify-between gap-4 sm:mb-5">
       <div className="min-w-0">
-        {eyebrow && (
-          <p className={`eyebrow ${light ? "!text-[#ffe08a]" : ""}`}>
-            <svg aria-hidden viewBox="0 0 20 20" className="size-3.5"><path d="M10 1q1.6 7.4 9 9-7.4 1.6-9 9-1.6-7.4-9-9 7.4-1.6 9-9Z" fill="currentColor" /></svg>
-            {eyebrow}
-          </p>
-        )}
-        <h2 className={`text-[1.75rem] font-extrabold leading-[1.05] sm:text-[2.35rem] ${light ? "text-white" : "text-primary-dark"}`}>{title}</h2>
-        {subtitle && <p className={`mt-1.5 text-[15px] sm:text-base ${light ? "text-white/85" : "text-muted"}`}>{subtitle}</p>}
+        <h2 id={id} className="text-[1.5rem] font-extrabold leading-tight tracking-tight text-ink sm:text-[1.85rem]">{title}</h2>
+        {subtitle && <p className="mt-1 text-[15px] text-muted">{subtitle}</p>}
       </div>
       {href && (
-        <Link href={href} aria-label={`${linkLabel}: ${title}`} className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-white py-1.5 pl-3.5 pr-1.5 text-sm font-extrabold text-primary shadow-card transition hover:bg-soft-blue">
-          <span className="hidden sm:inline">{linkLabel}</span><span className="sm:hidden">Ver</span>
-          <span aria-hidden className="grid size-7 place-items-center rounded-full bg-primary text-white transition group-hover:translate-x-0.5">→</span>
+        <Link href={href} aria-label={`${linkLabel}: ${title}`} className="group inline-flex shrink-0 items-center gap-1 py-2 text-sm font-extrabold text-primary hover:underline">
+          <span className="hidden sm:inline">{linkLabel}</span><span className="sm:hidden">Ver todos</span>
+          <ChevronRight size={16} className="transition group-hover:translate-x-0.5" />
         </Link>
       )}
     </div>
