@@ -12,7 +12,7 @@
 - **Estrutura de grande varejo**: grade de banners (principal + dois atalhos), compra por idade, categorias em lista de cartões, vitrines com título simples e "Ver todos".
 - **Tipografia única** (Nunito, já carregada): títulos em 800 com espaçamento levemente fechado. A fonte arredondada de exibição (Baloo) saiu — em tamanho grande ela deixava tudo com cara infantil/genérica.
 - **Cor com limites**: azul estrutura e ações; amarelo só no botão principal e em fundos suaves; vermelho só em preço/promoção; tons suaves para diferenciar blocos. Fundo creme, cartões brancos com borda fina.
-- **Ícones de traço** no mesmo desenho dos ícones do site, para categorias (escolhidos pelo nome; categorias novas recebem um ícone neutro). Foto de categoria enviada no painel substitui o ícone.
+- **Ícones de traço** no mesmo desenho dos ícones do site, para categorias (escolhidos pelo nome; categorias novas recebem um ícone neutro). Foto de categoria enviada em Painel > Categorias (editar → "Foto da categoria") substitui o ícone.
 - **Menos arredondamento e sem sombras de "peça de brinquedo"**: botões com cantos de 12 px, cartões com borda.
 - **Movimento discreto**: só transições de hover e uma entrada suave das seções ao rolar (CSS, desligada com "reduzir movimento").
 

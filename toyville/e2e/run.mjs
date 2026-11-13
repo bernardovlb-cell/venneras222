@@ -5,6 +5,7 @@
  */
 import { createRequire } from "node:module";
 import { spawn, execSync } from "node:child_process";
+import sharp from "sharp";
 import { createHmac } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -106,6 +107,21 @@ try {
     await a.selectOption("select[name=status]", "active");
     await a.click("button:has-text('Salvar produto')");
     await a.getByText("Produto salvo.").waitFor();
+  });
+
+  await step("foto de categoria enviada no painel aparece na home no lugar do ícone", async () => {
+    const png = await sharp({ create: { width: 400, height: 400, channels: 3, background: { r: 255, g: 194, b: 26 } } }).png().toBuffer();
+    await a.goto(`${BASE}/admin/categorias`);
+    const row = a.locator("li", { hasText: "/carrinhos-e-pistas" }).first();
+    await row.locator("button:has-text('Editar')").click();
+    const form = a.locator("form", { has: a.locator("input[name=image]") });
+    await form.locator("input[name=image]").setInputFiles({ name: "carrinhos.png", mimeType: "image/png", buffer: png });
+    await form.locator("button:has-text('Salvar')").click();
+    await a.locator("li", { hasText: "/carrinhos-e-pistas" }).getByText("com foto").waitFor(); // o formulário fecha ao salvar
+    await a.goto(`${BASE}/`);
+    const img = a.locator("a[href='/c/carrinhos-e-pistas'] img").first();
+    await img.waitFor();
+    assert(/categorias\/.+\.webp/.test(decodeURIComponent((await img.getAttribute("src")) ?? "")), "foto da categoria não aparece na home");
   });
 
   await step("importar produtos por CSV (pré-visualização, erro e confirmação)", async () => {

@@ -5,7 +5,7 @@ import { brands, categories, products } from "../db/schema";
 
 /** Categorias em ordem de árvore, com profundidade (para selects). */
 export async function categoryOptions() {
-  const all = await db.select({ id: categories.id, name: categories.name, parentId: categories.parentId, position: categories.position, isActive: categories.isActive, slug: categories.slug, isFeatured: categories.isFeatured, description: categories.description })
+  const all = await db.select({ id: categories.id, name: categories.name, parentId: categories.parentId, position: categories.position, isActive: categories.isActive, slug: categories.slug, isFeatured: categories.isFeatured, description: categories.description, imageUrl: categories.imageUrl })
     .from(categories).orderBy(asc(categories.position), asc(categories.name));
   const out: ((typeof all)[number] & { depth: number })[] = [];
   const walk = (parent: string | null, depth: number) => {

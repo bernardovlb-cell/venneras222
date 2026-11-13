@@ -30,7 +30,7 @@ Atualizado em 13/11/2026 (3ª rodada: refinamento visual — ver `docs/DIRECAO-D
 - Visão geral (receita aprovada, ticket médio, aguardando pagamento, a separar, cancelados, reembolsos, mais vendidos, estoque baixo, alertas) e **checklist de pendências para operar**.
 - Produtos: cadastro, edição, variações, imagens (lote, principal, reordenar, substituir, excluir, texto alternativo), ajuste de estoque, publicar/despublicar/arquivar/excluir.
 - Importação CSV/XLSX com modelo, pré-visualização, validação, SKUs duplicados, relatório de erros por linha, atualização segura e transação única.
-- Categorias (árvore) e marcas.
+- Categorias (árvore, com foto opcional que substitui o ícone na loja) e marcas.
 - Pedidos: filtros, detalhe, pagamentos, histórico, separação → retirada/envio → entrega, rastreamento, devolução com reposição, cancelamento de não pagos, reembolso, consulta ao Mercado Pago, dados fiscais e notas internas. **Sem opção de marcar como pago.**
 - Clientes (com auditoria de visualização), promoções e cupons, conteúdo (banners, seções, páginas), avaliações, atendimento, configurações (loja, marca, WhatsApp, diferenciais, checkout, entrega/retirada, fiscal, analytics, redes, SEO), integrações (mapeamento de SKUs, webhooks recebidos, caixa de e-mails), usuários e permissões por papel, auditoria.
 
@@ -82,7 +82,7 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 - Contraste insuficiente: selo de desconto vermelho sobre rosa (~4,4:1) e “Você economiza” em verde (~3,6:1) → tons escurecidos (≥ 6:1).
 - Requisição 404 de `/favicon.ico` (erro no console) → ícone vazio declarado até a aprovação do favicon.
 - Ordem de títulos nas listagens (h1 → h3) e falta de meta description em produtos sem resumo → corrigidos.
-- Refinamento visual: grid do hero crescia além da tela no celular (título e botões cortados, sem rolagem horizontal aparente) → colunas `minmax(0,1fr)` e novo teste E2E que procura conteúdo cortado; barra de categorias do desktop quebrava em duas linhas → menu “Todas as categorias”; duas caixas de busca na mesma página repetiam o id `busca` → id único; “Os queridinhos da ToyVille” aparecia mesmo sem vendas → subtítulo de popularidade só com vendas reais; contraste de rótulos conferido (≥ 4,5:1).
+- Refinamento visual: grid do hero crescia além da tela no celular (título e botões cortados, sem rolagem horizontal aparente) → colunas `minmax(0,1fr)` e novo teste E2E que procura conteúdo cortado; barra de categorias do desktop quebrava em duas linhas → menu “Todas as categorias”; duas caixas de busca na mesma página repetiam o id `busca` → id único; “Os queridinhos da ToyVille” aparecia mesmo sem vendas → subtítulo de popularidade só com vendas reais; a loja já exibia foto de categoria, mas o painel não permitia enviá-la → envio, troca e remoção em Painel > Categorias; contraste de rótulos conferido (≥ 4,5:1).
 
 ## Testes executados (13/11/2026, após o refinamento visual)
 
@@ -91,8 +91,8 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 | `npm run typecheck` | sem erros |
 | `npm run lint` | sem erros e sem avisos |
 | `npm run build` | concluído |
-| `npm test` — 83 testes (unidade + integração com PostgreSQL real) | 83 passaram |
-| `npm run test:e2e` — 25 cenários no navegador (build de produção) | 25 passaram |
+| `npm test` — 84 testes (unidade + integração com PostgreSQL real) | 84 passaram |
+| `npm run test:e2e` — 26 cenários no navegador (build de produção) | 26 passaram |
 | Lighthouse 13 (celular, rede lenta simulada, servidor local, com dados de demonstração) | Início: desempenho mediana 99 em 5 execuções (93 na primeira, servidor frio), TBT 50–140 ms, LCP 0,8 s, CLS 0. Guia de presentes 96, categoria 100, produto 99. Acessibilidade 100 e boas práticas 100 em todas. SEO 100 (produto [DEMO] fica não indexável de propósito) |
 | axe-core (WCAG 2 A/AA + boas práticas), celular e desktop | início, presentes, resultado do guia, categoria, busca e produto sem violações |
 | Revisão visual com capturas (iPhone SE, iPhone 13, Galaxy S9+, 1440 px) | home com e sem campanhas, com e sem produtos; menus; guia; categoria; produto |
@@ -100,7 +100,7 @@ Mercado Pago · hospedagem Node.js · PostgreSQL gerenciado · armazenamento de 
 > Lighthouse local não mede a latência real da hospedagem nem imagens reais de produtos. Repetir em produção após o catálogo real (PageSpeed Insights / dados de campo do Chrome).
 
 Cobertura por tema: motor de preços e cupons (38 casos), assinatura do webhook, status do Mercado Pago, parser de importação; criação de pedido, snapshot de preço, idempotência, estoque insuficiente, **concorrência na última unidade**, **limite de cupom sob concorrência**, frete não configurado, entrega local por CEP, frete grátis; pagamento aprovado/pendente/recusado/divergente/duplicado/após cancelamento, expiração com reconciliação, reembolso, separação/entrega, controle de acesso ao pedido; webhook (assinatura válida, inválida, adulterada, ausente, repetida, falha do provedor, tópico ignorado); importação (criação, atualização segura, tudo-ou-nada, SKU de outro produto), estoque abaixo do reservado, variações, arquivamento, promoções inválidas, papéis e permissões, último proprietário, senhas, avaliações (pendente, duplicada, spam), anonimização LGPD.
-E2E (novos nesta rodada): nada cortado pela borda no celular (home, presentes, categoria) e guia de presentes por toques até as sugestões.
+E2E (novos nesta rodada): nada cortado pela borda no celular (home, presentes, categoria), guia de presentes por toques até as sugestões e foto de categoria enviada no painel aparecendo na home.
 E2E: login da equipe (erro e sucesso), painel exige login, cliente recebe 404 no painel, configurar retirada, bloqueio de Correios sem integração, cadastro e publicação de produto, importação CSV com erro e com sucesso, busca com erro de digitação, rascunho com 404, carrinho/quantidade/cupom, limite de estoque, checkout de visitante até o Mercado Pago (simulado), URL de retorno falsificada não marca pago, webhook assinado/forjado/repetido, separação e retirada, cron protegido, cadastro sem perder dados, área do cliente, pedido alheio inacessível, ausência de rolagem horizontal em 375 px e 1366 px, sitemap e JSON-LD.
 
 **Não executado**: pagamentos no ambiente de teste real do Mercado Pago (sem rede para `api.mercadopago.com` e sem credenciais neste ambiente); envio real de e-mail; upload para Supabase Storage; Core Web Vitals em produção com dados reais; testes em Safari/Firefox reais (só Chromium, incluindo emulação de iPhone).
