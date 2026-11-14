@@ -1,49 +1,84 @@
 "use client";
 import { useState } from "react";
 import { AdminForm, F, Check, ActionButton } from "./ui";
-import { saveBannerAction, saveHomeSectionAction, savePageAction, toggleRecordAction, deleteRecordAction } from "@/app/admin/actions";
+import { saveBannerAction, moveBannerAction, saveHomeSectionAction, savePageAction, toggleRecordAction, deleteRecordAction } from "@/app/admin/actions";
 
 const THEME_DOT: Record<string, string> = { blue: "bg-primary", yellow: "bg-accent", red: "bg-promo", green: "bg-success", cream: "bg-soft-yellow" };
+const POSITION_LABEL: Record<string, string> = { left: "texto à esquerda", right: "texto à direita", overlay: "texto sobre a foto" };
 
-export type BannerRow = { id: string; placement: string; title: string; subtitle: string | null; imageUrl: string | null; linkUrl: string | null; ctaLabel: string | null; theme: string; position: number; startsAt: string; endsAt: string; isActive: boolean; isDemo: boolean };
+export type BannerRow = {
+  id: string; placement: string; title: string; subtitle: string | null; imageUrl: string | null; mobileImageUrl: string | null; linkUrl: string | null; ctaLabel: string | null;
+  theme: string; textPosition: string; imageMode: string; position: number; startsAt: string; endsAt: string; isActive: boolean; isDemo: boolean;
+};
 
-export function BannerEditor({ b }: { b?: BannerRow }) {
+/**
+ * Banner da home. `placement` define o grupo: "hero" (carrossel principal) ou "side" (secundário).
+ * `preview`: o próprio componente da loja, já renderizado com os dados salvos.
+ */
+export function BannerEditor({ b, placement, preview, first = false, last = false }: { b?: BannerRow; placement: "hero" | "side"; preview?: React.ReactNode; first?: boolean; last?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const main = placement === "hero";
   if (!open) {
     return b ? (
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className={`size-4 rounded-full ${THEME_DOT[b.theme] ?? "bg-primary"}`} aria-hidden />
-        <span className="font-bold">{b.title}</span>{b.imageUrl && <span className="chip bg-soft-blue">com imagem</span>}{!b.isActive && <span className="chip bg-soft-red">inativo</span>}
-        <span className="text-muted">ordem {b.position}{b.endsAt ? ` · até ${b.endsAt.replace("T", " ")}` : ""}</span>
-        <span className="ml-auto flex gap-1"><button className="btn btn-outline btn-sm" onClick={() => setOpen(true)}>Editar</button>
-          <ActionButton action={() => toggleRecordAction("banner", b.id, !b.isActive)} className="btn btn-ghost btn-sm">{b.isActive ? "Desativar" : "Ativar"}</ActionButton>
-          <ActionButton action={() => deleteRecordAction("banner", b.id)} confirm="Excluir banner?" className="btn btn-ghost btn-sm text-promo">Excluir</ActionButton></span>
+      <div>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className={`size-4 rounded-full ${THEME_DOT[b.theme] ?? "bg-primary"}`} aria-hidden />
+          <span className="font-bold">{b.title}</span>
+          {b.imageUrl ? <span className="chip bg-soft-blue">com foto</span> : <span className="chip bg-soft-yellow">sem foto</span>}
+          {!b.isActive && <span className="chip bg-soft-red">inativo</span>}
+          <span className="text-muted">{main ? POSITION_LABEL[b.textPosition] ?? "" : ""}{b.endsAt ? ` · até ${b.endsAt.replace("T", " ")}` : ""}</span>
+          <span className="ml-auto flex flex-wrap gap-1">
+            <ActionButton action={() => moveBannerAction(b.id, "up")} className="btn btn-ghost btn-sm" >{first ? <span className="opacity-40">↑</span> : "↑"}<span className="sr-only">Subir {b.title}</span></ActionButton>
+            <ActionButton action={() => moveBannerAction(b.id, "down")} className="btn btn-ghost btn-sm">{last ? <span className="opacity-40">↓</span> : "↓"}<span className="sr-only">Descer {b.title}</span></ActionButton>
+            {preview && <button className="btn btn-ghost btn-sm" aria-expanded={showPreview} onClick={() => setShowPreview((v) => !v)}>{showPreview ? "Ocultar prévia" : "Prévia"}</button>}
+            <button className="btn btn-outline btn-sm" onClick={() => setOpen(true)}>Editar</button>
+            <ActionButton action={() => toggleRecordAction("banner", b.id, !b.isActive)} className="btn btn-ghost btn-sm">{b.isActive ? "Despublicar" : "Publicar"}</ActionButton>
+            <ActionButton action={() => deleteRecordAction("banner", b.id)} confirm={`Excluir o banner "${b.title}"?`} className="btn btn-ghost btn-sm text-promo">Excluir</ActionButton>
+          </span>
+        </div>
+        {showPreview && preview && (
+          <div className="mt-3 rounded-xl border border-dashed border-line bg-cream p-3">
+            <p className="mb-2 text-xs font-bold text-muted">Prévia com os dados salvos (no site, a largura acompanha a tela)</p>
+            <div className={`tv-store pointer-events-none ${main ? "max-w-[760px]" : "max-w-[420px]"}`}>{preview}</div>
+          </div>
+        )}
       </div>
-    ) : <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}>+ Novo banner</button>;
+    ) : <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}>{main ? "+ Nova campanha" : "+ Novo banner secundário"}</button>;
   }
   return (
     <AdminForm action={saveBannerAction} onResult={(r) => r.ok && setOpen(false)} footer={<button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>Cancelar</button>}>
       {b && <input type="hidden" name="id" value={b.id} />}
-      <input type="hidden" name="placement" value="hero" />
+      <input type="hidden" name="placement" value={placement} />
+      <input type="hidden" name="position" value={String(b?.position ?? 99)} />
       <div className="grid gap-3 sm:grid-cols-2">
         <F label="Título" name="title" defaultValue={b?.title} required />
-        <F label="Subtítulo" name="subtitle" defaultValue={b?.subtitle ?? ""} />
-        <F label="Link" name="linkUrl" defaultValue={b?.linkUrl ?? ""} placeholder="/ofertas" />
-        <F label="Texto do botão" name="ctaLabel" defaultValue={b?.ctaLabel ?? ""} />
-        <F label="Cor de fundo (sem imagem)" name="theme" as="select" defaultValue={b?.theme ?? "blue"}><option value="blue">Azul</option><option value="yellow">Amarelo</option><option value="red">Vermelho</option><option value="green">Verde</option><option value="cream">Creme</option></F>
-        <F label="Ordem" name="position" type="number" min={0} defaultValue={String(b?.position ?? 0)} />
-        <F label="Início" name="startsAt" type="datetime-local" defaultValue={b?.startsAt} />
-        <F label="Fim" name="endsAt" type="datetime-local" defaultValue={b?.endsAt} />
-        <F label="Imagem (desktop, ~1600×600)" name="image" type="file" accept="image/*" />
-        <F label="Imagem (celular, ~800×800)" name="mobileImage" type="file" accept="image/*" />
-        {b?.imageUrl && <Check label="Remover imagens atuais" name="removeImage" />}
-        <Check label="Ativo" name="isActive" defaultChecked={b?.isActive ?? true} />
+        <F label="Texto complementar" name="subtitle" defaultValue={b?.subtitle ?? ""} />
+        <F label="Link (para onde o banner leva)" name="linkUrl" defaultValue={b?.linkUrl ?? ""} placeholder="/ofertas" hint="Caminho do site (ex.: /c/pelucias) ou endereço https://" />
+        <F label="Texto do botão" name="ctaLabel" defaultValue={b?.ctaLabel ?? ""} placeholder="Ver mais" />
+        <F label="Cor" name="theme" as="select" defaultValue={b?.theme ?? "blue"}><option value="blue">Azul</option><option value="yellow">Amarelo</option><option value="red">Vermelho (promoções)</option><option value="green">Verde</option><option value="cream">Creme</option></F>
+        {main ? (
+          <F label="Posição do texto" name="textPosition" as="select" defaultValue={b?.textPosition ?? "left"} hint="“Sobre a foto” aplica um véu escuro para o texto continuar legível.">
+            <option value="left">À esquerda (foto à direita)</option><option value="right">À direita (foto à esquerda)</option><option value="overlay">Sobre a foto</option>
+          </F>
+        ) : <input type="hidden" name="textPosition" value="left" />}
+        <F label="Tipo de foto" name="imageMode" as="select" defaultValue={b?.imageMode ?? "cutout"} hint="Recortada: brinquedo inteiro, de preferência PNG/WebP com fundo transparente. Ambiente: foto que preenche a área (pode ser cortada nas bordas).">
+          <option value="cutout">Brinquedo recortado</option><option value="cover">Foto de ambiente</option>
+        </F>
+        <div className="hidden sm:block" />
+        <F label={main ? "Foto (computador, ~1600×900)" : "Foto (~800×800)"} name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif" />
+        {main ? <F label="Foto para celular (opcional, ~900×700)" name="mobileImage" type="file" accept="image/jpeg,image/png,image/webp,image/avif" hint="Use quando o enquadramento do computador cortar algo importante no celular." /> : <div className="hidden sm:block" />}
+        <F label="Início (opcional)" name="startsAt" type="datetime-local" defaultValue={b?.startsAt} />
+        <F label="Fim (opcional)" name="endsAt" type="datetime-local" defaultValue={b?.endsAt} />
+        {b?.imageUrl && <Check label="Remover as fotos atuais" name="removeImage" />}
+        <Check label="Publicado" name="isActive" defaultChecked={b?.isActive ?? true} />
       </div>
+      <p className="text-xs text-muted">O título e o botão são sempre texto de verdade: não coloque texto dentro da foto. Use apenas fotos próprias ou com autorização de uso.</p>
     </AdminForm>
   );
 }
 
-const SECTION_LABEL: Record<string, string> = { hero: "Banner principal", categories: "Categorias", best_sellers: "Mais vendidos", deals: "Ofertas", flash: "Ofertas relâmpago", gift_finder: "Guia de presentes", benefits: "Diferenciais", featured_products: "Produtos em destaque", new_arrivals: "Lançamentos" };
+const SECTION_LABEL: Record<string, string> = { hero: "Banners (principal + secundários)", categories: "Categorias + Compre por idade", best_sellers: "Mais vendidos (destaque + grade)", deals: "Ofertas (painel)", flash: "Ofertas relâmpago (carrossel)", gift_finder: "Guia de presentes", benefits: "Institucional — por que comprar na ToyVille", featured_products: "Seleção de produtos", new_arrivals: "Lançamentos (carrossel)" };
 
 export function SectionEditor({ s }: { s: { id: string; type: string; title: string | null; subtitle: string | null; position: number; isActive: boolean; limit: number | null } }) {
   return (

@@ -7,7 +7,7 @@ import { useToast } from "../ui/Toast";
 import { CartIcon, HeartIcon } from "../icons";
 import { track } from "@/lib/analytics";
 
-export function QuickAdd({ variantId, productName, priceCents }: { variantId: string; productName: string; priceCents: number }) {
+export function QuickAdd({ variantId, productName, priceCents, className = "btn btn-primary btn-sm w-full" }: { variantId: string; productName: string; priceCents: number; className?: string }) {
   const [pending, start] = useTransition();
   const toast = useToast();
   const router = useRouter();
@@ -21,7 +21,7 @@ export function QuickAdd({ variantId, productName, priceCents }: { variantId: st
           router.refresh();
         } else toast({ kind: "error", text: r.error });
       })}
-      className="btn btn-primary btn-sm w-full">
+      className={className}>
       <CartIcon size={18} /> {pending ? "Adicionando…" : "Adicionar"}
     </button>
   );
@@ -40,7 +40,7 @@ export function FavoriteButton({ productId, initial = false, className = "" }: {
         else if (r.error === "login_required") router.push(`/conta/entrar?next=${encodeURIComponent(location.pathname)}`);
         else toast({ kind: "error", text: r.error });
       })}
-      className={`grid size-10 place-items-center rounded-full bg-white/95 shadow-card transition hover:scale-110 ${fav ? "text-promo" : "text-muted hover:text-promo"} ${className}`}>
+      className={`grid size-10 place-items-center rounded-full bg-white/95 shadow-sm transition duration-200 hover:scale-110 ${fav ? "text-promo" : "text-muted hover:text-promo"} ${className}`}>
       <HeartIcon size={20} filled={fav} />
     </button>
   );

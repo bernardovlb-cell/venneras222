@@ -69,6 +69,7 @@ export function MobileMenu({ categories, loggedIn }: { categories: Cat[]; logged
                 </li>
               ))}
             </ul>
+            <div className="px-4 pb-3 pt-1"><Link href="/categorias" className="btn btn-outline btn-sm w-full">Ver todas as categorias</Link></div>
             <div className="mt-auto grid gap-1 border-t border-line p-3 text-sm font-bold">
               <Link href={loggedIn ? "/conta" : "/conta/entrar"} className="flex items-center gap-3 rounded-xl p-3 hover:bg-cream"><UserIcon size={20} /> {loggedIn ? "Minha conta" : "Entrar ou cadastrar"}</Link>
               <Link href="/conta/favoritos" className="flex items-center gap-3 rounded-xl p-3 hover:bg-cream"><HeartIcon size={20} /> Favoritos</Link>

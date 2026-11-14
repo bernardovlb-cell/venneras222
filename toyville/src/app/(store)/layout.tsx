@@ -20,7 +20,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         </aside>
       )}
       <Header />
-      <main id="conteudo" className="min-h-[60vh]">{children}</main>
+      <main id="conteudo" className="tv-store min-h-[60vh]">{children}</main>
       <Footer />
       {wa && (
         <a href={wa} target="_blank" rel="noopener noreferrer" aria-label="Falar com a ToyVille pelo WhatsApp"

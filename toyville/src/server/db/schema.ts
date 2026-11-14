@@ -445,7 +445,7 @@ export const webhookEvents = pgTable("webhook_events", {
 /* ---------------------------------------------------------------- Conteúdo */
 export const banners = pgTable("banners", {
   id: uuid("id").primaryKey().defaultRandom(),
-  placement: text("placement").notNull().default("hero"), // hero | promo
+  placement: text("placement").notNull().default("hero"), // hero (carrossel principal) | side (banners secundários)
   title: text("title").notNull(),
   subtitle: text("subtitle"),
   imageUrl: text("image_url"),
@@ -453,6 +453,8 @@ export const banners = pgTable("banners", {
   linkUrl: text("link_url"),
   ctaLabel: text("cta_label"),
   theme: text("theme").notNull().default("blue"), // blue | yellow | red | green | cream
+  textPosition: text("text_position").notNull().default("left"), // left | right | overlay (texto sobre a imagem)
+  imageMode: text("image_mode").notNull().default("cover"), // cover (foto preenche a área) | cutout (foto recortada, inteira)
   position: integer("position").notNull().default(0),
   startsAt: ts("starts_at"),
   endsAt: ts("ends_at"),
@@ -471,6 +473,17 @@ export const homeSections = pgTable("home_sections", {
   config: jsonb("config").$type<{ limit?: number; productIds?: string[]; categoryIds?: string[] }>().notNull().default({}),
   createdAt: createdAt(),
 });
+
+/** Inscritos na newsletter (rodapé). Só e-mail + registro do consentimento; nenhum envio é feito por aqui. */
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  consentAt: ts("consent_at").notNull(),
+  consentText: text("consent_text").notNull(), // texto exato aceito pelo visitante
+  source: text("source").notNull().default("footer"),
+  unsubscribedAt: ts("unsubscribed_at"),
+  createdAt: createdAt(),
+}, (t) => [uniqueIndex("newsletter_email_uq").on(t.email)]);
 
 export const pages = pgTable("pages", {
   slug: text("slug").primaryKey(),

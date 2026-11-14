@@ -10,6 +10,7 @@ const NAV: (NavItem & { perm: Permission })[] = [
   { href: "/admin/produtos", label: "Produtos", perm: "products.read" },
   { href: "/admin/categorias", label: "Categorias e marcas", perm: "products.read" },
   { href: "/admin/clientes", label: "Clientes", perm: "customers.read" },
+  { href: "/admin/newsletter", label: "Newsletter", perm: "customers.read" },
   { href: "/admin/promocoes", label: "Promoções e cupons", perm: "promotions.write" },
   { href: "/admin/conteudo", label: "Conteúdo e home", perm: "content.write" },
   { href: "/admin/avaliacoes", label: "Avaliações", perm: "reviews.moderate" },

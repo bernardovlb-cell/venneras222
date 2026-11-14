@@ -3,7 +3,7 @@ import Link from "next/link";
 export function PageHead({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-      <div><h1 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">{title}</h1>{subtitle && <p className="text-sm text-muted">{subtitle}</p>}</div>
+      <div><h1 className="text-2xl font-extrabold text-ink sm:text-3xl">{title}</h1>{subtitle && <p className="text-sm text-muted">{subtitle}</p>}</div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
   );
@@ -40,7 +40,7 @@ export function Stat({ label, value, hint, href, tone }: { label: string; value:
   const inner = (
     <div className={`h-full rounded-2xl border border-line bg-white p-4 ${href ? "transition hover:border-primary/40 hover:shadow-card" : ""}`}>
       <p className="text-xs font-extrabold uppercase tracking-wide text-muted">{label}</p>
-      <p className={`mt-1 font-display text-2xl font-extrabold ${tone === "red" ? "text-promo" : tone === "green" ? "text-[#1d5e1d]" : ""}`}>{value}</p>
+      <p className={`mt-1 text-2xl font-extrabold ${tone === "red" ? "text-promo" : tone === "green" ? "text-[#1d5e1d]" : ""}`}>{value}</p>
       {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );

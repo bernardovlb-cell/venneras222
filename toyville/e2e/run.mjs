@@ -33,6 +33,8 @@ const admin = new URL(DB); admin.pathname = "/postgres";
 execSync(`psql "${admin}" -c "drop database if exists ${new URL(DB).pathname.slice(1)}" -c "create database ${new URL(DB).pathname.slice(1)}"`, { stdio: "ignore" });
 for (const s of ["scripts/migrate.ts", "scripts/seed.ts", "scripts/seed-demo.ts"]) execSync(`npx tsx ${s}`, { env, stdio: "ignore" });
 execSync(`npx tsx scripts/create-admin.ts --email dono@e2e.test --name "Dono E2E"`, { env: { ...env, ADMIN_PASSWORD: "Dono12345" }, stdio: "ignore" });
+// carrossel mais rápido só para o teste (o padrão é 6 s; o valor vem das configurações)
+execSync(`psql "${DB}" -c "insert into settings (key, value) values ('home', '{\\"carouselSeconds\\":3,\\"newsletterEnabled\\":true}')"`, { stdio: "ignore" });
 
 // ---------- servidores
 const mp = startMpMock(MP_PORT);
@@ -119,9 +121,62 @@ try {
     await form.locator("button:has-text('Salvar')").click();
     await a.locator("li", { hasText: "/carrinhos-e-pistas" }).getByText("com foto").waitFor(); // o formulário fecha ao salvar
     await a.goto(`${BASE}/`);
-    const img = a.locator("a[href='/c/carrinhos-e-pistas'] img").first();
+    const img = a.locator("article:has(a[href='/c/carrinhos-e-pistas']) img").first();
     await img.waitFor();
     assert(/categorias\/.+\.webp/.test(decodeURIComponent((await img.getAttribute("src")) ?? "")), "foto da categoria não aparece na home");
+  });
+
+  await step("painel: nova campanha com foto e texto sobre a imagem aparece no carrossel; despublicar remove", async () => {
+    const png = await sharp({ create: { width: 1200, height: 700, channels: 3, background: { r: 31, g: 79, b: 209 } } }).png().toBuffer();
+    await a.goto(`${BASE}/admin/conteudo`);
+    await a.click("button:has-text('+ Nova campanha')");
+    const form = a.locator("form", { has: a.locator("select[name=textPosition]") });
+    await form.locator("input[name=title]").fill("Campanha E2E");
+    await form.locator("input[name=subtitle]").fill("Texto real, fora da imagem");
+    await form.locator("input[name=linkUrl]").fill("/presentes");
+    await form.locator("input[name=ctaLabel]").fill("Conferir");
+    await form.locator("select[name=textPosition]").selectOption("overlay");
+    await form.locator("select[name=imageMode]").selectOption("cover");
+    await form.locator("input[name=image]").setInputFiles({ name: "campanha.png", mimeType: "image/png", buffer: png });
+    await form.locator("button:has-text('Salvar')").click();
+    const row = a.locator("li", { hasText: "Campanha E2E" });
+    await row.getByText("com foto").waitFor();
+    await row.getByText("texto sobre a foto").waitFor();
+    await row.locator("button:has-text('Prévia')").click();
+    await row.locator(".tv-store h2", { hasText: "Campanha E2E" }).waitFor(); // prévia usa o componente da loja
+    await a.goto(`${BASE}/`);
+    const slide = a.locator("[aria-roledescription=slide]", { hasText: "Campanha E2E" });
+    assert(await slide.count() === 1, "campanha não entrou no carrossel");
+    assert(/banners\/.+\.webp/.test(decodeURIComponent((await slide.locator("img").first().getAttribute("src")) ?? "")), "foto da campanha não foi usada");
+    assert((await slide.locator("a", { hasText: "Conferir" }).getAttribute("href")) === "/presentes", "botão da campanha sem o link configurado");
+    await a.goto(`${BASE}/admin/conteudo`);
+    await a.locator("li", { hasText: "Campanha E2E" }).locator("button:has-text('Despublicar')").click();
+    await a.locator("li", { hasText: "Campanha E2E" }).getByText("inativo").waitFor();
+    await a.goto(`${BASE}/`);
+    assert(await a.locator("[aria-roledescription=slide]", { hasText: "Campanha E2E" }).count() === 0, "campanha despublicada continua na home");
+  });
+
+  await step("painel: banner secundário novo sobe na ordem e passa a aparecer ao lado do principal", async () => {
+    await a.goto(`${BASE}/admin/conteudo`);
+    await a.click("button:has-text('+ Novo banner secundário')");
+    const form = a.locator("form", { has: a.locator("input[name=placement][value=side]") });
+    await form.locator("input[name=title]").fill("Lateral E2E");
+    await form.locator("input[name=linkUrl]").fill("/categorias");
+    await form.locator("button:has-text('Salvar')").click();
+    await a.locator("li", { hasText: "Lateral E2E" }).first().waitFor();
+    const order = () => execSync(`psql "${DB}" -tAc "select string_agg(title, '|' order by position) from banners where placement='side'"`).toString().trim();
+    assert(order().endsWith("Lateral E2E"), `novo banner deveria entrar no fim: ${order()}`);
+    for (let i = 0; i < 2; i++) {
+      const before = order();
+      await a.getByRole("button", { name: "Subir Lateral E2E" }).click();
+      for (let k = 0; k < 30 && order() === before; k++) await a.waitForTimeout(100);
+    }
+    assert(order().split("|")[1] === "Lateral E2E", `ordem inesperada: ${order()}`);
+    await a.goto(`${BASE}/`);
+    const side = a.locator("ul[aria-label='Mais destaques'] > li");
+    assert(await side.count() === 2, `esperava 2 banners secundários, há ${await side.count()}`);
+    assert((await side.nth(1).innerText()).includes("Lateral E2E"), "banner secundário novo não aparece na 2ª posição");
+    assert(await a.locator("ul[aria-label='Mais destaques']").getByText("Novidades").count() === 0, "“Novidades” despublicado não pode aparecer");
   });
 
   await step("importar produtos por CSV (pré-visualização, erro e confirmação)", async () => {
@@ -322,9 +377,177 @@ try {
     await ctx.close();
   });
 
+  // ---------------- home 3.0
+  const activeSlide = (p) => p.locator("[aria-roledescription=slide]:not([inert])").first().getAttribute("aria-label");
+  const waitSlide = async (p, test, ms = 6000) => { for (let t = 0; t < ms; t += 150) { if (test(await activeSlide(p))) return true; await p.waitForTimeout(150); } return false; };
+
+  await step("carrossel: gira sozinho, pausa com o mouse, para depois de interação manual e volta com “retomar”", async () => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    const first = await activeSlide(p);
+    assert(first?.startsWith("1 de "), `slide inicial: ${first}`);
+    assert(await waitSlide(p, (l) => l?.startsWith("2 de ")), "não avançou sozinho");
+    await p.hover("[aria-roledescription=carrossel] h2, [aria-roledescription=carrossel] h1");
+    const held = await activeSlide(p);
+    await p.waitForTimeout(4200);
+    assert((await activeSlide(p)) === held, "avançou com o mouse em cima");
+    await p.mouse.move(700, 880);
+    assert(await waitSlide(p, (l) => l !== held), "não retomou ao tirar o mouse");
+    await p.click("button[aria-label='Próxima campanha']");
+    await p.mouse.move(700, 880);
+    await p.waitForTimeout(900);
+    const manual = await activeSlide(p);
+    await p.waitForTimeout(4200);
+    assert((await activeSlide(p)) === manual, "avançou sozinho depois de navegação manual");
+    const toggle = p.locator("button[aria-label*='troca automática']");
+    assert((await toggle.getAttribute("aria-label")).startsWith("Retomar"), "botão deveria oferecer “retomar”");
+    await p.click("button[aria-label^='Mostrar campanha 1 de']");
+    await p.waitForTimeout(900);
+    assert((await activeSlide(p)).startsWith("1 de "), "indicador não levou ao slide 1");
+    await toggle.click();
+    await p.mouse.move(700, 880);
+    assert(await waitSlide(p, (l) => !l.startsWith("1 de ")), "não voltou a girar depois de “retomar”");
+    assert(await p.locator("[aria-roledescription=slide][inert] a").count() > 0 && await p.locator("[aria-roledescription=slide]:not([inert]) a").count() > 0, "slides fora de vista deveriam ficar inertes");
+    await ctx.close();
+  });
+
+  await step("carrossel: foco de teclado pausa; com “reduzir movimento” não gira sozinho", async () => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    let inside = false;
+    for (let i = 0; i < 60 && !inside; i++) { await p.keyboard.press("Tab"); inside = await p.evaluate(() => !!document.activeElement?.closest("[aria-roledescription=carrossel]")); }
+    assert(inside, "não chegou ao carrossel pelo teclado");
+    const held = await activeSlide(p);
+    await p.waitForTimeout(4200);
+    assert((await activeSlide(p)) === held, "avançou com foco de teclado dentro");
+    await ctx.close();
+    const rm = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+    const q = await rm.newPage();
+    await q.goto(BASE + "/");
+    await q.waitForTimeout(4200);
+    assert((await activeSlide(q)).startsWith("1 de "), "girou sozinho com “reduzir movimento”");
+    assert(await q.locator("button[aria-label*='troca automática']").count() === 0, "com movimento reduzido não há o que pausar");
+    await q.click("button[aria-label='Próxima campanha']");
+    await q.waitForTimeout(400);
+    assert((await activeSlide(q)).startsWith("2 de "), "navegação manual deveria funcionar com movimento reduzido");
+    await rm.close();
+  });
+
+  await step("banners: ~65/35 com dois secundários empilhados no desktop; no celular, secundários em carrossel próprio", async () => {
+    const d = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+    const p = await d.newPage();
+    await p.goto(BASE + "/");
+    const main = await p.locator("[aria-roledescription=carrossel]").boundingBox();
+    const sideUl = p.locator("ul[aria-label='Mais destaques']");
+    const side = await sideUl.boundingBox();
+    const share = main.width / (side.x + side.width - main.x);
+    assert(share > 0.62 && share < 0.67, `banner principal ocupa ${(share * 100).toFixed(1)}% (esperado ~65%)`);
+    assert(Math.abs(main.height - side.height) <= 2, `alturas diferentes: principal ${main.height}px, secundários ${side.height}px`);
+    const b1 = await sideUl.locator("> li").nth(0).boundingBox(), b2 = await sideUl.locator("> li").nth(1).boundingBox();
+    assert(b2.y > b1.y + b1.height - 1 && Math.abs(b1.height - b2.height) <= 2, "secundários deveriam estar empilhados e com a mesma altura");
+    await d.close();
+    for (const dev of ["iPhone SE", "iPhone 13"]) {
+      const m = await browser.newContext({ ...devices[dev], reducedMotion: "reduce" });
+      const q = await m.newPage();
+      await q.goto(BASE + "/");
+      const vw = q.viewportSize().width;
+      const mb = await q.locator("[aria-roledescription=carrossel]").boundingBox();
+      assert(mb.width >= vw - 34 && mb.x >= 0, `${dev}: banner principal não usa a largura disponível (${mb.width}px de ${vw}px)`);
+      const rail = await q.locator("ul[aria-label='Mais destaques']").evaluate((el) => ({ sw: el.scrollWidth, cw: el.clientWidth, top: el.getBoundingClientRect().top }));
+      assert(rail.sw > rail.cw + 40, `${dev}: secundários deveriam deslizar na horizontal`);
+      assert(rail.top >= mb.y + mb.height - 1, `${dev}: secundários deveriam ficar abaixo do principal`);
+      for (const sel of ["section:has(#por-idade) ul", "section:has(a[href='/categorias']) ul.tv-rail"]) {
+        const r = await q.locator(sel).first().evaluate((el) => el.scrollWidth > el.clientWidth + 40);
+        assert(r, `${dev}: ${sel} deveria ser um carrossel horizontal`);
+      }
+      await m.close();
+    }
+  });
+
+  await step("categorias e idades: todas as categorias acessíveis; cartão de idade leva ao filtro", async () => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    const total = Number(execSync(`psql "${DB}" -tAc "select count(*) from categories where is_active and parent_id is null"`).toString().trim());
+    const cards = p.locator("section:has(a[href='/categorias']) ul.tv-rail > li a[href^='/c/']");
+    assert(await cards.count() === total, `home lista ${await cards.count()} de ${total} categorias`);
+    await p.goto(BASE + "/categorias");
+    assert(await p.locator("main h2 a[href^='/c/']").count() === total, "página de categorias incompleta");
+    await p.goto(BASE + "/");
+    await p.click("a[aria-label='Brinquedos para 3 a 4 anos']");
+    await p.waitForURL(/\/busca\?idade=3-4/);
+    assert(await p.locator("input[name=idade][value='3-4']").first().isChecked(), "filtro de idade não foi aplicado");
+    await ctx.close();
+  });
+
+  await step("guia de presentes: exige idade, mostra e limpa as escolhas", async () => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    const form = p.locator("form[action='/presentes']");
+    await form.locator("button[type=submit]").click();
+    await form.getByText("Escolha a idade da criança").waitFor();
+    assert(new URL(p.url()).pathname === "/", "não deveria buscar sem idade");
+    await form.locator("label:has(input[value='5-7'])").click();
+    await form.locator("label:has(input[value='ate-50'])").click();
+    const picked = form.locator("ul[aria-label='Suas escolhas']");
+    assert((await picked.innerText()).includes("5 a 7 anos") && (await picked.innerText()).includes("Até R$ 50"), "escolhas não aparecem no resumo");
+    await picked.getByRole("button", { name: "Remover: Até R$ 50" }).click();
+    assert(!(await picked.innerText()).includes("Até R$ 50"), "escolha removida continua no resumo");
+    await form.getByRole("button", { name: "Limpar tudo" }).click();
+    assert(await form.locator("input[name=idade]:checked").count() === 0, "“Limpar tudo” não limpou a idade");
+    await ctx.close();
+  });
+
+  await step("newsletter: valida e-mail e consentimento, grava no banco e aparece no painel", async () => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+    const p = await ctx.newPage();
+    await p.goto(BASE + "/");
+    const f = p.locator("footer form");
+    const count = () => execSync(`psql "${DB}" -tAc "select count(*) from newsletter_subscribers"`).toString().trim();
+    await f.locator("input[name=email]").fill("nao-e-email");
+    await f.locator("input[name=consent]").check();
+    await f.locator("button[type=submit]").click();
+    await f.getByText("Informe um e-mail válido.").waitFor();
+    await f.locator("input[name=email]").fill("news@e2e.test");
+    await f.locator("input[name=consent]").uncheck();
+    await f.locator("button[type=submit]").click();
+    await f.getByText("Marque a caixa para autorizar").waitFor();
+    assert(count() === "0", "gravou sem consentimento ou com e-mail inválido");
+    assert((await f.locator("input[name=email]").inputValue()) === "news@e2e.test", "apagou o e-mail digitado ao dar erro");
+    await f.locator("input[name=consent]").check();
+    await f.locator("button[type=submit]").click();
+    await f.getByText("Pronto! Seu e-mail foi cadastrado.").waitFor();
+    assert(execSync(`psql "${DB}" -tAc "select email||'|'||(consent_at is not null) from newsletter_subscribers"`).toString().trim() === "news@e2e.test|true", "inscrição não foi gravada");
+    await ctx.close();
+    await a.goto(`${BASE}/admin/newsletter`);
+    await a.getByText("news@e2e.test").first().waitFor();
+  });
+
+  await step("catálogo vazio: um único estado vazio no lugar das vitrines, sem produto inventado", async () => {
+    execSync(`psql "${DB}" -c "update products set status='archived' where status='active'"`, { stdio: "ignore" });
+    try {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+      const p = await ctx.newPage();
+      await p.goto(BASE + "/");
+      assert(await p.getByText("Nossas prateleiras estão sendo montadas").count() === 1, "estado vazio deveria aparecer exatamente uma vez");
+      assert(await p.locator("main a[href^='/produto/']").count() === 0, "há card de produto com o catálogo vazio");
+      // preços fora do guia de presentes (as faixas de orçamento do guia não são preços de produto)
+      const prices = await p.evaluate(() => { const m = document.querySelector("main").cloneNode(true); m.querySelectorAll("form[action='/presentes']").forEach((f) => f.remove()); return (m.textContent.match(/R\$\s?\d/g) ?? []).length; });
+      assert(prices === 0, "há preço de produto na home com o catálogo vazio");
+      for (const t of ["Explore por categoria", "Compre por idade", "Encontre o presente perfeito", "Por que comprar na ToyVille"]) assert(await p.locator("main h2", { hasText: t }).count() >= 1, `seção ausente: ${t}`);
+      await p.screenshot({ path: `${shotDir}/home-vazia-1440.png`, fullPage: true });
+      await ctx.close();
+    } finally {
+      execSync(`psql "${DB}" -c "update products set status='active' where status='archived'"`, { stdio: "ignore" });
+    }
+  });
+
   // ---------------- responsividade
   await step("sem rolagem horizontal em 375px e 1366px", async () => {
-    const pages = ["/", "/busca", "/c/carrinhos-e-pistas", "/produto/caminhao-basculante-e2e", "/carrinho", "/presentes?idade=3-4", "/atendimento", "/conta/entrar", "/p/trocas-e-devolucoes"];
+    const pages = ["/", "/categorias", "/busca", "/c/carrinhos-e-pistas", "/produto/caminhao-basculante-e2e", "/carrinho", "/presentes?idade=3-4", "/atendimento", "/conta/entrar", "/p/trocas-e-devolucoes"];
     const bad = [];
     for (const [w, h] of [[375, 812], [1366, 900]]) {
       const ctx = await browser.newContext({ viewport: { width: w, height: h } });

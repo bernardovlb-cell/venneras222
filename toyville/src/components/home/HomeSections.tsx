@@ -1,300 +1,335 @@
 import Link from "next/link";
-import Image from "next/image";
-import { listProducts, getFeaturedCategories } from "@/server/services/catalog";
-import { getSettings } from "@/server/settings";
+import { listProducts, getHomeCategories, type HomeCategory } from "@/server/services/catalog";
+import { getSettings, whatsappLink } from "@/server/settings";
 import { AGE_BANDS } from "@/lib/age";
-import { ProductRail } from "../product/ProductCard";
+import { ProductCard, ProductRail } from "../product/ProductCard";
 import { SectionTitle } from "../ui/States";
 import { GiftFinderPanel } from "../gift/GiftFinderPanel";
-import { CategoryIcon } from "../catalog/CategoryIcon";
-import { TruckIcon, ShieldIcon, CardIcon, GiftIcon, StoreIcon, ChatIcon, StarIcon, RefreshIcon, BoltIcon, ChevronRight, BoxIcon } from "../icons";
+import { CategoryCard } from "../catalog/CategoryCard";
+import { CategoryGrid } from "./CategoryGrid";
+import { HeroCarousel } from "./HeroCarousel";
+import { CampaignBanner, SideBanner, FALLBACK_MAIN, FALLBACK_SIDE, type BannerView } from "./Banners";
+import { ShapesCompact, ShapesRow } from "../brand/Shapes";
+import { TruckIcon, ShieldIcon, CardIcon, GiftIcon, StoreIcon, ChatIcon, StarIcon, RefreshIcon, BoltIcon, ChevronRight, BlocksIcon, MapPinIcon } from "../icons";
 import { Countdown } from "../product/Countdown";
 import type { banners, homeSections } from "@/server/db/schema";
 
 type Section = typeof homeSections.$inferSelect;
 type Banner = typeof banners.$inferSelect;
-type Brand = { logoUrl: string; logoWidth: number; logoHeight: number };
 
-/* ------------------------------------------------------------------ hero */
+/* ============================================================ 1. BANNERS */
 
-/** Banner principal da marca (enquanto não houver campanhas com imagem). A logo oficial é a única peça visual. */
-function BrandBanner({ brand }: { brand: Brand }) {
+/**
+ * Área de destaque: banner principal (carrossel, ~65%) + banners secundários (~35%, empilhados).
+ * No celular: principal em cima e secundários num carrossel horizontal próprio.
+ * Tudo vem do painel (Conteúdo > Banners); sem banners ativos, usa as chamadas padrão.
+ */
+export async function HeroArea({ banners: all }: { banners: Banner[] }) {
+  const { home } = await getSettings();
+  const main: BannerView[] = all.filter((b) => b.placement === "hero");
+  const side: BannerView[] = all.filter((b) => b.placement === "side").slice(0, 2);
+  const mainList = main.length ? main : [FALLBACK_MAIN];
+  const sideList = side.length ? side : FALLBACK_SIDE;
   return (
-    <div className="relative grid h-full overflow-hidden rounded-2xl bg-primary text-white md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-      <div className="relative z-10 flex flex-col justify-center p-6 sm:p-10">
-        <h1 className="text-[2rem] font-extrabold leading-[1.08] tracking-tight sm:text-5xl">Brinquedos para todas as idades</h1>
-        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/85 sm:text-lg">
-          Educativos, pelúcias, jogos, carrinhos e muito mais. Encontre por idade, categoria ou orçamento.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-          <Link href="/busca" className="btn btn-accent">Ver todos os brinquedos</Link>
-        </div>
-      </div>
-      <div className="relative hidden items-center justify-center bg-white/[0.06] p-8 md:flex">
-        <div className="rounded-3xl bg-white p-5 shadow-[0_20px_50px_-20px_rgba(0,0,0,.45)]">
-          <Image src={brand.logoUrl} alt="" width={brand.logoWidth} height={brand.logoHeight} sizes="320px" className="h-auto w-[min(320px,26vw)]" priority />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const THEMES: Record<string, { bg: string; text: string; cta: string; muted: string }> = {
-  blue: { bg: "bg-primary", text: "text-white", cta: "btn-accent", muted: "text-white/85" },
-  yellow: { bg: "bg-accent", text: "text-ink", cta: "btn-primary", muted: "text-ink/75" },
-  red: { bg: "bg-promo", text: "text-white", cta: "btn-accent", muted: "text-white/90" },
-  green: { bg: "bg-[#1f7a26]", text: "text-white", cta: "btn-accent", muted: "text-white/90" },
-  cream: { bg: "bg-soft-yellow", text: "text-ink", cta: "btn-primary", muted: "text-muted" },
-};
-
-/** Campanha cadastrada no painel: com imagem, a arte enviada ocupa o banner; sem imagem, banner tipográfico na cor do tema. */
-function BannerSlide({ b, first }: { b: Banner; first: boolean }) {
-  const t = THEMES[b.theme] ?? THEMES.blue;
-  const Title = first ? "h1" : "h2";
-  if (b.imageUrl) {
-    return (
-      <div className="relative flex h-full min-h-[300px] overflow-hidden rounded-2xl bg-ink sm:min-h-[380px]">
-        <picture className="absolute inset-0">
-          {b.mobileImageUrl && <source media="(max-width: 640px)" srcSet={b.mobileImageUrl} />}
-          <Image src={b.imageUrl} alt="" fill priority={first} sizes="(max-width: 1024px) 100vw, 860px" className="object-cover" />
-        </picture>
-        <div className="relative flex max-w-xl flex-col justify-end gap-3 bg-gradient-to-t from-black/60 via-black/15 to-transparent p-6 text-white sm:justify-center sm:bg-gradient-to-r sm:p-10">
-          <Title className="text-3xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl">{b.title}</Title>
-          {b.subtitle && <p className="text-base opacity-90 sm:text-lg">{b.subtitle}</p>}
-          {b.linkUrl && <Link href={b.linkUrl} className="btn btn-accent mt-1 w-fit">{b.ctaLabel || "Confira"}</Link>}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className={`flex h-full min-h-[260px] flex-col justify-center gap-3 rounded-2xl p-6 sm:min-h-[340px] sm:p-10 ${t.bg} ${t.text}`}>
-      <Title className="max-w-2xl text-[2rem] font-extrabold leading-[1.08] tracking-tight sm:text-5xl">{b.title}</Title>
-      {b.subtitle && <p className={`max-w-xl text-base sm:text-lg ${t.muted}`}>{b.subtitle}</p>}
-      {b.linkUrl && <Link href={b.linkUrl} className={`btn mt-2 w-fit ${t.cta}`}>{b.ctaLabel || "Confira"}</Link>}
-    </div>
-  );
-}
-
-function SideCard({ href, title, text, icon, tone }: { href: string; title: string; text: string; icon: React.ReactNode; tone: string }) {
-  return (
-    <Link href={href} className={`group flex flex-col items-start gap-3 rounded-2xl p-4 transition hover:shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6 ${tone}`}>
-      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-primary shadow-sm sm:size-12">{icon}</span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-extrabold leading-tight sm:text-lg">{title}</span>
-        <span className="mt-0.5 hidden text-sm text-ink/70 sm:block">{text}</span>
-      </span>
-      <ChevronRight size={20} className="hidden shrink-0 text-ink/50 transition group-hover:translate-x-0.5 sm:block" />
-    </Link>
-  );
-}
-
-export async function Hero({ items }: { items: Banner[] }) {
-  const [{ brand }, deals] = await Promise.all([getSettings(), listProducts({ onSale: true, inStock: true, perPage: 1 })]);
-  return (
-    <section className="container-tv pt-4 sm:pt-6">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-4">
-        {items.length ? (
-          <div aria-roledescription="carrossel" aria-label="Destaques">
-            <ul className="scrollbar-none flex h-full snap-x snap-mandatory gap-3 overflow-x-auto">
-              {items.map((b, i) => (
-                <li key={b.id} className="w-full shrink-0 snap-center" aria-roledescription="slide" aria-label={`${i + 1} de ${items.length}`}>
-                  <BannerSlide b={b} first={i === 0} />
-                </li>
-              ))}
-            </ul>
-            {items.length > 1 && <p className="mt-2 text-center text-xs font-bold text-muted">Deslize para ver mais destaques</p>}
-          </div>
-        ) : <BrandBanner brand={brand} />}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
-          <SideCard href="/presentes" title="Guia de presentes" text="Filtre por idade, orçamento e interesse." icon={<GiftIcon size={24} />} tone="bg-soft-yellow" />
-          {deals.total > 0 ? (
-            <SideCard href="/ofertas" title="Ofertas" text="Produtos com preço promocional." icon={<BoltIcon size={22} className="text-promo-ink" />} tone="bg-soft-red" />
-          ) : (
-            <SideCard href="/busca?ordem=newest" title="Novidades" text="Os últimos brinquedos que chegaram." icon={<StarIcon size={22} filled={false} />} tone="bg-soft-blue" />
-          )}
-        </div>
+    <section className="container-tv pb-2 pt-4 sm:pt-6" aria-label="Destaques da loja">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,65fr)_minmax(0,35fr)] lg:gap-4">
+        <HeroCarousel intervalMs={home.carouselSeconds * 1000}>
+          {mainList.map((b, i) => <CampaignBanner key={b.id} b={b} first={i === 0} controls={mainList.length > 1} />)}
+        </HeroCarousel>
+        <ul aria-label="Mais destaques" className="tv-rail -mx-4 px-4 pb-1 md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 md:pb-0 lg:auto-rows-fr lg:grid-cols-1">
+          {sideList.map((b, i) => <li key={b.id} className="w-[84%] md:w-auto"><SideBanner b={b} variant={i + 1} /></li>)}
+        </ul>
       </div>
     </section>
   );
 }
 
-/* --------------------------------------------------------------- por idade */
-
-const AGE_TONES = ["bg-soft-yellow", "bg-soft-blue", "bg-soft-green", "bg-[#ffeedd]", "bg-soft-blue", "bg-soft-yellow"];
-
-/** "Compre por idade": números grandes, sem ilustração. */
-export function ShopByAge() {
-  return (
-    <section className="container-tv reveal" aria-labelledby="por-idade">
-      <SectionTitle id="por-idade" title="Compre por idade" />
-      <ul className="grid grid-cols-3 gap-2.5 sm:gap-3 lg:grid-cols-6">
-        {AGE_BANDS.map((b, i) => {
-          const months = b.key === "0-12m";
-          const n = months ? "0–12" : b.key === "12+" ? "12+" : b.key.replace("-", "–");
-          return (
-            <li key={b.key}>
-              <Link href={`/busca?idade=${encodeURIComponent(b.key)}`} aria-label={`Brinquedos para ${b.label}`}
-                className={`group flex h-full flex-col justify-between rounded-2xl p-3.5 transition hover:-translate-y-0.5 hover:shadow-card sm:p-5 ${AGE_TONES[i]}`}>
-                <span className="text-[1.9rem] font-extrabold leading-none tracking-tight text-primary-dark sm:text-[2.6rem]">{n}</span>
-                <span className="mt-2 flex items-center justify-between text-[13px] font-bold text-ink/75 sm:text-sm">
-                  {months ? "meses" : "anos"}
-                  <ChevronRight size={16} className="text-ink/40 transition group-hover:translate-x-0.5" />
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------ categorias */
+/* ========================================================= 2. CATEGORIAS */
 
 async function CategoriesSection({ s }: { s: Section }) {
-  const cats = await getFeaturedCategories();
+  const cats = await getHomeCategories();
   if (!cats.length) return null;
   return (
-    <section className="container-tv reveal">
-      <SectionTitle title={s.title ?? "Categorias"} subtitle={s.subtitle} href="/busca" linkLabel="Ver todos os brinquedos" />
-      <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-        {cats.map((c) => (
-          <li key={c.id}>
-            <Link href={`/c/${c.slug}`} className="group flex h-full items-center gap-3 rounded-2xl border border-line bg-white p-3 transition hover:border-primary/40 hover:shadow-card sm:gap-4 sm:p-4">
-              <span className="relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-soft-blue text-primary sm:size-14">
-                {c.imageUrl ? <Image src={c.imageUrl} alt="" fill sizes="56px" className="object-cover" /> : <CategoryIcon slug={c.slug} size={26} />}
-              </span>
-              <span className="min-w-0 flex-1 text-[14px] font-bold leading-snug sm:text-[15px]">{c.name}</span>
-              <ChevronRight size={18} className="hidden shrink-0 text-muted transition group-hover:translate-x-0.5 group-hover:text-primary sm:block" />
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <section className="tv-section bg-white">
+      <div className="container-tv reveal">
+        <SectionTitle title={s.title ?? "Explore por categoria"} subtitle={s.subtitle} href="/categorias" linkLabel="Ver todas as categorias" shortLabel="Ver todas" />
+        <CategoryGrid initial={8}>
+          {cats.map((c, i) => <CategoryCard key={c.id} c={c} i={i} />)}
+        </CategoryGrid>
+      </div>
     </section>
   );
 }
 
-/* --------------------------------------------------------------- vitrines */
+/* ======================================================= 3. FAIXA ETÁRIA */
 
+const AGE_TONES = ["bg-soft-yellow", "bg-soft-blue", "bg-soft-green", "bg-soft-yellow", "bg-soft-blue", "bg-soft-green"];
+
+/** "Compre por idade": cartões numerados com as faixas reais do catálogo. */
+export function ShopByAge() {
+  return (
+    <section className="tv-section" aria-labelledby="por-idade">
+      <div className="container-tv reveal">
+        <SectionTitle id="por-idade" title="Compre por idade" subtitle="Brinquedos certos para cada fase." />
+        <ul className="tv-rail -mx-4 px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-6 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:gap-4">
+          {AGE_BANDS.map((b, i) => {
+            const months = b.key === "0-12m";
+            const n = months ? "0–12" : b.key === "12+" ? "12+" : b.key.replace("-", "–");
+            return (
+              <li key={b.key} className="w-[31%] min-w-[112px] sm:w-auto sm:min-w-0">
+                <Link href={`/busca?idade=${encodeURIComponent(b.key)}`} aria-label={`Brinquedos para ${b.label}`}
+                  className={`group relative isolate flex h-full min-h-[112px] flex-col justify-between overflow-hidden rounded-card p-4 transition duration-300 ease-brand hover:-translate-y-1 hover:shadow-lift lg:min-h-[136px] lg:p-5 ${AGE_TONES[i]}`}>
+                  <span aria-hidden className="absolute -bottom-7 -right-7 -z-10 size-20 rounded-full bg-white/70 transition duration-500 ease-brand group-hover:scale-125 lg:size-24" />
+                  <span className="font-display text-[2rem] font-semibold leading-none text-primary-dark sm:text-[1.7rem] lg:text-[2.75rem]">{n}</span>
+                  <span className="mt-3 flex items-center justify-between text-[13px] font-bold text-ink/75 lg:text-sm">
+                    {months ? "meses" : "anos"}
+                    <ChevronRight size={16} className="text-ink/50 transition group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ================================================== 4. GUIA DE PRESENTES */
+
+async function GiftSection({ s }: { s: Section }) {
+  const cats = (await getHomeCategories()).map((c) => ({ id: c.id, name: c.name }));
+  return (
+    <section className="tv-section relative isolate overflow-hidden bg-soft-blue">
+      <span aria-hidden className="absolute -left-24 -top-24 -z-10 size-72 rounded-full bg-white/60" />
+      <span aria-hidden className="absolute -bottom-32 right-[-6rem] -z-10 size-80 rounded-full bg-soft-yellow" />
+      <div className="container-tv reveal">
+        <GiftFinderPanel title={s.title ?? "Encontre o presente perfeito"} subtitle={s.subtitle} categories={cats} />
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================== 5. VITRINES */
+
+function PromoHeader({ title, subtitle, end }: { title: string; subtitle?: string | null; end?: Date | null }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 className="flex items-center gap-2 text-[1.6rem] font-semibold leading-tight text-promo-ink sm:text-[2rem]"><BoltIcon size={24} /> {title}</h2>
+        {subtitle && <p className="mt-1 text-[15px] text-ink/75">{subtitle}</p>}
+      </div>
+      <div className="flex items-center gap-4">
+        {end && <p className="flex items-center gap-2 rounded-full bg-promo px-3.5 py-1.5 text-sm font-bold text-white">Termina em <Countdown endsAt={end.toISOString()} /></p>}
+        <Link href="/ofertas" className="inline-flex items-center gap-1 py-2 text-sm font-extrabold text-primary hover:underline">Ver todas <ChevronRight size={16} /></Link>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Vitrines com composições diferentes (variedade controlada, mesmos cards):
+ * mais vendidos = destaque grande + grade · lançamentos = carrossel · ofertas = painel com grade ·
+ * relâmpago = painel com carrossel e contagem · seleção do painel = grade.
+ * Sem produtos reais para a regra, a vitrine não aparece.
+ */
 async function ProductsSection({ s, favorites }: { s: Section; favorites: Set<string> }) {
   const limit = Math.min(s.config.limit ?? 8, 16);
   let title = s.title ?? "";
   let subtitle = s.subtitle;
-  let href: string | undefined;
-  let items;
-  let flashEnd: Date | null = null;
+
   switch (s.type) {
     case "best_sellers": {
-      items = (await listProducts({ sort: "best_sellers", perPage: limit, inStock: true })).items;
-      if (!items.some((i) => i.salesCount > 0)) { title = "Destaques da loja"; subtitle = null; } // sem vendas reais: nem "mais vendidos", nem subtítulo de popularidade
-      href = "/busca?ordem=best_sellers";
-      break;
+      const items = (await listProducts({ sort: "best_sellers", perPage: 5, inStock: true })).items;
+      if (!items.length) return null;
+      const realSales = items.some((i) => i.salesCount > 0);
+      if (!realSales) { title = "Destaques da loja"; subtitle = null; } // sem vendas reais: nem "mais vendidos", nem selo
+      return (
+        <section className="tv-section bg-white">
+          <div className="container-tv reveal">
+            <SectionTitle title={title} subtitle={subtitle} href="/busca?ordem=best_sellers" />
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-4 lg:grid-cols-4">
+              {items.map((p, i) => (
+                <li key={p.id} className={i === 0 ? "col-span-2 lg:row-span-2" : ""}>
+                  <ProductCard p={p} favorited={favorites.has(p.id)} featured={i === 0} bestSeller={realSales && i === 0 && p.salesCount > 0} priority={i === 0} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      );
     }
-    case "deals":
-      items = (await listProducts({ onSale: true, sort: "discount", perPage: limit, inStock: true })).items;
-      href = "/ofertas";
-      break;
+    case "new_arrivals": {
+      const items = (await listProducts({ sort: "newest", perPage: limit, inStock: true })).items;
+      if (!items.length) return null;
+      return (
+        <section className="tv-section">
+          <div className="container-tv reveal">
+            <SectionTitle title={title || "Lançamentos"} subtitle={subtitle} href="/busca?ordem=newest" />
+            <ProductRail items={items} favorites={favorites} label={title || "Lançamentos"} />
+          </div>
+        </section>
+      );
+    }
+    case "deals": {
+      const items = (await listProducts({ onSale: true, sort: "discount", perPage: limit, inStock: true })).items;
+      if (!items.length) return null;
+      return (
+        <section className="tv-section bg-white">
+          <div className="container-tv reveal">
+            <div className="rounded-panel bg-soft-red p-4 sm:p-8">
+              <PromoHeader title={title || "Ofertas"} subtitle={subtitle} />
+              <ul className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-4">
+                {items.map((p, i) => <li key={p.id} className={i >= 4 ? "hidden md:block" : ""}><ProductCard p={p} favorited={favorites.has(p.id)} /></li>)}
+              </ul>
+            </div>
+          </div>
+        </section>
+      );
+    }
     case "flash": {
       const all = (await listProducts({ onSale: true, sort: "discount", perPage: 60, inStock: true })).items.filter((i) => i.promotionEndsAt);
-      items = all.slice(0, limit);
-      flashEnd = all.reduce<Date | null>((m, i) => (!m || i.promotionEndsAt! < m ? i.promotionEndsAt : m), null);
-      href = "/ofertas";
-      break;
+      const items = all.slice(0, limit);
+      if (!items.length) return null;
+      const end = all.reduce<Date | null>((m, i) => (!m || i.promotionEndsAt! < m ? i.promotionEndsAt : m), null);
+      return (
+        <section className="tv-section">
+          <div className="container-tv reveal">
+            <div className="rounded-panel bg-soft-red p-4 sm:p-8">
+              <PromoHeader title={title || "Ofertas relâmpago"} subtitle={subtitle} end={end} />
+              <ProductRail items={items} favorites={favorites} label={title || "Ofertas relâmpago"} />
+            </div>
+          </div>
+        </section>
+      );
     }
-    case "new_arrivals":
-      items = (await listProducts({ sort: "newest", perPage: limit, inStock: true })).items;
-      href = "/busca?ordem=newest";
-      break;
-    case "featured_products":
-      items = (await listProducts({ productIds: s.config.productIds ?? [], perPage: limit })).items;
-      break;
+    case "featured_products": {
+      const items = (await listProducts({ productIds: s.config.productIds ?? [], perPage: limit })).items;
+      if (!items.length) return null;
+      return (
+        <section className="tv-section bg-white">
+          <div className="container-tv reveal">
+            <SectionTitle title={title || "Seleção ToyVille"} subtitle={subtitle} />
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-4">
+              {items.map((p) => <li key={p.id}><ProductCard p={p} favorited={favorites.has(p.id)} /></li>)}
+            </ul>
+          </div>
+        </section>
+      );
+    }
     default:
       return null;
   }
-  if (!items.length) return null; // sem conteúdo real → seção oculta
-
-  return (
-    <section className="container-tv reveal">
-      {s.type === "flash" ? (
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-promo-ink sm:text-3xl"><BoltIcon size={24} /> {title}</h2>
-            {subtitle && <p className="mt-1 text-[15px] text-muted">{subtitle}</p>}
-          </div>
-          <div className="flex items-center gap-4">
-            {flashEnd && (
-              <p className="flex items-center gap-2 rounded-lg bg-promo px-3 py-1.5 text-sm font-bold text-white">
-                Termina em <Countdown endsAt={flashEnd.toISOString()} />
-              </p>
-            )}
-            <Link href="/ofertas" className="hidden text-sm font-extrabold text-primary hover:underline sm:inline">Ver todas</Link>
-          </div>
-        </div>
-      ) : (
-        <SectionTitle title={title} subtitle={subtitle} href={href} />
-      )}
-      <ProductRail items={items} favorites={favorites} />
-    </section>
-  );
 }
 
-/* ---------------------------------------------------------- benefícios */
-
-const BENEFIT_ICONS = { truck: TruckIcon, shield: ShieldIcon, card: CardIcon, gift: GiftIcon, store: StoreIcon, chat: ChatIcon, star: StarIcon, refresh: RefreshIcon };
-
-async function BenefitsSection({ s }: { s: Section }) {
-  const { benefits } = await getSettings();
-  if (!benefits.items.length) return null; // só benefícios confirmados no painel
-  return (
-    <section className="container-tv reveal" aria-label={s.title ?? "Por que comprar na ToyVille"}>
-      <ul className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        {benefits.items.map((b, i) => {
-          const Icon = BENEFIT_ICONS[b.icon];
-          return (
-            <li key={i} className="flex items-start gap-3.5 bg-white p-4 sm:p-5">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-soft-blue text-primary"><Icon /></span>
-              <div><p className="font-extrabold leading-tight">{b.title}</p><p className="mt-0.5 text-sm text-muted">{b.description}</p></div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-/* ---------------------------------------------------- guia de presentes */
-
-async function GiftSection({ s }: { s: Section }) {
-  const cats = (await getFeaturedCategories()).map((c) => ({ id: c.id, name: c.name }));
-  return (
-    <section className="container-tv reveal">
-      <GiftFinderPanel title={s.title ?? "Encontre o presente perfeito"} subtitle={s.subtitle} categories={cats} />
-    </section>
-  );
-}
-
-/* ------------------------------------------ catálogo ainda sem produtos */
-
-/** Aparece só enquanto não há nenhum produto ativo: explica a vitrine vazia sem inventar itens. */
+/** Estado vazio único das vitrines: aparece no lugar delas enquanto não há nenhum produto ativo. */
 export function CatalogComingSoon() {
   return (
-    <section className="container-tv reveal">
-      <div className="flex flex-col items-start gap-4 rounded-2xl border border-line bg-white p-6 sm:flex-row sm:items-center sm:gap-6 sm:p-8">
-        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-soft-blue text-primary"><BoxIcon size={28} /></span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">Catálogo em cadastro</h2>
-          <p className="mt-1 text-muted">Os produtos estão sendo cadastrados. Procurando algo específico? Fale com a gente.</p>
+    <section className="tv-section bg-white">
+      <div className="container-tv reveal">
+        <div className="relative isolate grid items-center gap-2 overflow-hidden rounded-panel bg-soft-yellow sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:gap-6">
+          <ShapesCompact theme="soft-yellow" variant={2} className="mx-auto mt-6 w-44 sm:my-6 sm:w-full sm:max-w-[280px]" />
+          <div className="p-6 pt-2 text-center sm:p-10 sm:pl-0 sm:text-left">
+            <h2 className="text-[1.6rem] font-semibold leading-tight text-primary-dark sm:text-[2.1rem]">Nossas prateleiras estão sendo montadas</h2>
+            <p className="mx-auto mt-2 max-w-md text-ink/75 sm:mx-0 sm:text-lg">Os brinquedos estão chegando ao site. Enquanto isso, conheça as categorias ou fale com a gente.</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3 sm:justify-start">
+              <Link href="/categorias" className="btn btn-primary">Explorar categorias</Link>
+              <Link href="/atendimento" className="btn btn-outline">Falar com a loja</Link>
+            </div>
+          </div>
         </div>
-        <Link href="/atendimento" className="btn btn-primary shrink-0">Falar com a loja</Link>
       </div>
     </section>
   );
 }
 
+/* ====================================================== 6. INSTITUCIONAL */
+
+const BENEFIT_ICONS = { truck: TruckIcon, shield: ShieldIcon, card: CardIcon, gift: GiftIcon, store: StoreIcon, chat: ChatIcon, star: StarIcon, refresh: RefreshIcon };
+type Tile = { icon: React.ReactNode; title: string; text: string; href?: string; cta?: string; external?: boolean };
+
+/**
+ * "Por que comprar na ToyVille": variedade, loja física, atendimento e guia de presentes.
+ * Só usa dados verificados: contagem real de categorias, endereço/horário das Configurações (o
+ * bloco da loja física some se não houver endereço) e benefícios cadastrados pelo proprietário.
+ */
+async function InstitutionalSection({ s }: { s: Section }) {
+  const [{ store, whatsapp, benefits }, cats] = await Promise.all([getSettings(), getHomeCategories()]);
+  const wa = whatsappLink(whatsapp);
+  const tiles: Tile[] = [
+    { icon: <BlocksIcon size={24} />, title: "Brinquedos para todas as idades", text: `De 0 a 12+ anos, em ${cats.length} ${cats.length === 1 ? "categoria" : "categorias"}.`, href: "/categorias", cta: "Ver categorias" },
+    ...(store.address ? [{
+      icon: <MapPinIcon size={24} />, title: "Loja física", text: [store.address, store.businessHours].filter(Boolean).join(" · "),
+      href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address)}`, cta: "Ver no mapa", external: true,
+    } satisfies Tile] : []),
+    { icon: <ChatIcon size={24} />, title: "Fale com a ToyVille", text: "Tire dúvidas sobre brinquedos, pedidos e trocas.", href: wa ?? "/atendimento", cta: wa ? "Chamar no WhatsApp" : "Abrir atendimento", external: !!wa },
+    { icon: <GiftIcon size={24} />, title: "Presente sem complicação", text: "O guia sugere brinquedos por idade e orçamento.", href: "/presentes", cta: "Abrir o guia" },
+    ...benefits.items.map((b) => { const I = BENEFIT_ICONS[b.icon]; return { icon: <I />, title: b.title, text: b.description } satisfies Tile; }),
+  ];
+  return (
+    <section className="tv-section">
+      <div className="container-tv reveal grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.6fr)] lg:items-center lg:gap-12">
+        <div>
+          <h2 className="text-[1.75rem] font-semibold leading-[1.08] text-primary-dark sm:text-[2.4rem]">{s.title ?? "Por que comprar na ToyVille"}</h2>
+          <p className="mt-3 max-w-md text-ink/75 sm:text-lg">{s.subtitle ?? "Uma loja dedicada a brincar: para descobrir, aprender e se divertir junto."}</p>
+        </div>
+        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+          {tiles.map((t, i) => (
+            <li key={i} className="group relative flex gap-4 rounded-card bg-white p-5 shadow-card ring-1 ring-line/70 transition duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift">
+              <span className={`grid size-12 shrink-0 place-items-center rounded-2xl ${["bg-soft-blue text-primary", "bg-soft-yellow text-ink", "bg-soft-green text-success-ink"][i % 3]}`}>{t.icon}</span>
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold leading-tight">{t.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{t.text}</p>
+                {t.href && t.cta && (
+                  t.external
+                    ? <a href={t.href} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-[32px] items-center gap-1 text-sm font-extrabold text-primary after:absolute after:inset-0 after:content-['']">{t.cta} <ChevronRight size={16} /></a>
+                    : <Link href={t.href} className="mt-2 inline-flex min-h-[32px] items-center gap-1 text-sm font-extrabold text-primary after:absolute after:inset-0 after:content-['']">{t.cta} <ChevronRight size={16} /></Link>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ======================================================= 7. ENCERRAMENTO */
+
+/**
+ * Fecho da home: mensagem da marca (o slogan das Configurações) + convite para explorar.
+ * As formas "nascem" da borda de baixo e a curva azul emenda no rodapé.
+ */
+export async function ClosingSection() {
+  const { store } = await getSettings();
+  return (
+    <section className="relative isolate -mb-20 overflow-hidden bg-soft-yellow">
+      <div className="container-tv grid grid-cols-[minmax(0,1fr)] items-end gap-x-8 gap-y-2 pt-[var(--tv-section)] lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div className="reveal pb-4 lg:pb-24">
+          <h2 className="max-w-xl text-[2rem] font-semibold leading-[1.05] text-primary-dark sm:text-5xl lg:text-[3.4rem]">{store.tagline || "Brincar é descobrir o mundo"}</h2>
+          <p className="mt-4 max-w-md text-ink/75 sm:text-lg">Escolha por idade, por categoria ou deixe o guia de presentes ajudar.</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/busca" className="btn btn-primary btn-lg">Explorar brinquedos</Link>
+            <Link href="/categorias" className="btn btn-outline btn-lg">Ver categorias</Link>
+          </div>
+        </div>
+        {/* blocos apoiados na borda: a curva azul do rodapé passa por cima da base deles */}
+        <ShapesRow className="mx-auto -mb-3 w-full max-w-[340px] sm:max-w-[440px] lg:-mb-6 lg:max-w-[520px]" />
+      </div>
+      <svg aria-hidden viewBox="0 0 1440 80" preserveAspectRatio="none" className="relative block h-10 w-full text-primary-dark sm:h-16">
+        <path fill="currentColor" d="M0 80V46C240 6 480 0 720 0s480 6 720 46v34Z" />
+      </svg>
+    </section>
+  );
+}
+
+export type { HomeCategory };
+export const PRODUCT_SECTION_TYPES = ["best_sellers", "deals", "flash", "new_arrivals", "featured_products"] as const;
+
 export async function HomeSection({ s, favorites }: { s: Section; favorites: Set<string> }) {
   switch (s.type) {
     case "categories": return <CategoriesSection s={s} />;
-    case "benefits": return <BenefitsSection s={s} />;
+    case "benefits": return <InstitutionalSection s={s} />;
     case "gift_finder": return <GiftSection s={s} />;
     case "best_sellers": case "deals": case "flash": case "new_arrivals": case "featured_products":
       return <ProductsSection s={s} favorites={favorites} />;

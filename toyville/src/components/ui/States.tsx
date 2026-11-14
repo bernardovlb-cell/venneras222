@@ -23,18 +23,18 @@ export function Notice({ kind = "info", children }: { kind?: "info" | "warn" | "
   return <div role={kind === "error" ? "alert" : "status"} className={`rounded-2xl px-4 py-3 text-sm font-semibold ${cls}`}>{children}</div>;
 }
 
-export function SectionTitle({ title, subtitle, href, linkLabel = "Ver todos", id }: {
-  title: string; subtitle?: string | null; href?: string; linkLabel?: string; id?: string;
+export function SectionTitle({ title, subtitle, href, linkLabel = "Ver todos", shortLabel = "Ver todos", id }: {
+  title: string; subtitle?: string | null; href?: string; linkLabel?: string; shortLabel?: string; id?: string;
 }) {
   return (
     <div className="mb-4 flex items-end justify-between gap-4 sm:mb-5">
       <div className="min-w-0">
-        <h2 id={id} className="text-[1.5rem] font-extrabold leading-tight tracking-tight text-ink sm:text-[1.85rem]">{title}</h2>
+        <h2 id={id} className="text-[1.6rem] font-semibold leading-tight text-ink sm:text-[2rem]">{title}</h2>
         {subtitle && <p className="mt-1 text-[15px] text-muted">{subtitle}</p>}
       </div>
       {href && (
         <Link href={href} aria-label={`${linkLabel}: ${title}`} className="group inline-flex shrink-0 items-center gap-1 py-2 text-sm font-extrabold text-primary hover:underline">
-          <span className="hidden sm:inline">{linkLabel}</span><span className="sm:hidden">Ver todos</span>
+          <span className="hidden sm:inline">{linkLabel}</span><span className="sm:hidden">{shortLabel}</span>
           <ChevronRight size={16} className="transition group-hover:translate-x-0.5" />
         </Link>
       )}

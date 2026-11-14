@@ -26,12 +26,16 @@ export interface ProductCard {
   ratingAvg: number | null;
   ratingCount: number;
   createdAt: Date;
+  isNew: boolean; // cadastrado há no máximo NEW_PRODUCT_DAYS dias (selo "Novo")
   salesCount: number;
   relevance: number;
   categoryId: string | null;
   brandId: string | null;
   isDemo: boolean;
 }
+
+/** Um produto recebe o selo "Novo" enquanto foi cadastrado há no máximo este número de dias. */
+export const NEW_PRODUCT_DAYS = 30;
 
 export type SortKey = "relevance" | "price_asc" | "price_desc" | "newest" | "best_sellers" | "discount" | "rating";
 
@@ -189,7 +193,7 @@ async function hydrateCards(
       inStock: inStockVars.length > 0, variantCount: vs.length, defaultVariantId: vs.length === 1 ? vs[0].id : null,
       minAgeMonths: r.minAge, maxAgeMonths: r.maxAge,
       ratingAvg: rat ? Math.round(rat.avg * 10) / 10 : null, ratingCount: rat?.n ?? 0,
-      createdAt: r.createdAt, salesCount: salesBy.get(r.id) ?? 0, relevance: Number(r.relevance) || 0, isDemo: r.isDemo,
+      createdAt: r.createdAt, isNew: now.getTime() - r.createdAt.getTime() < NEW_PRODUCT_DAYS * 86_400_000, salesCount: salesBy.get(r.id) ?? 0, relevance: Number(r.relevance) || 0, isDemo: r.isDemo,
     });
   }
   return out;
@@ -287,6 +291,33 @@ export async function getHomeData() {
 export async function hasActiveProducts() {
   const [row] = await db.select({ id: products.id }).from(products).where(eq(products.status, "active")).limit(1);
   return !!row;
+}
+
+export interface HomeCategory { id: string; name: string; slug: string; description: string | null; photoUrl: string | null; photoSource: "manual" | "product" | null; children: { id: string; name: string; slug: string }[] }
+
+/**
+ * Categorias principais (todas as ativas) com a imagem a exibir na loja.
+ * Prioridade: foto enviada no painel > foto de um produto ATIVO da própria categoria ou de suas
+ * subcategorias (o mais recente) > nenhuma (o cartão usa o substituto visual da marca).
+ * Nunca usa foto de produto de outra categoria nem de produto de demonstração.
+ */
+export async function getHomeCategories(): Promise<HomeCategory[]> {
+  const cats = (await getCategories()).filter((c) => c.isActive);
+  const { rows } = await db.execute<{ categoryId: string; url: string }>(sql`
+    select distinct on (p.category_id) p.category_id as "categoryId", coalesce(pi.thumb_url, pi.url) as url
+    from products p join product_images pi on pi.product_id = p.id
+    where p.status = 'active' and p.is_demo = false and p.category_id is not null
+    order by p.category_id, p.created_at desc, pi.position asc
+  `);
+  const productPhoto = new Map(rows.map((r) => [r.categoryId, r.url]));
+  return cats.filter((c) => !c.parentId).map((c) => {
+    const fromProduct = categoryDescendants(cats, c.id).map((id) => productPhoto.get(id)).find(Boolean) ?? null;
+    return {
+      id: c.id, name: c.name, slug: c.slug, description: c.description,
+      photoUrl: c.imageUrl ?? fromProduct, photoSource: c.imageUrl ? "manual" : fromProduct ? "product" : null,
+      children: cats.filter((x) => x.parentId === c.id).map((x) => ({ id: x.id, name: x.name, slug: x.slug })),
+    };
+  });
 }
 
 export async function getFeaturedCategories() {

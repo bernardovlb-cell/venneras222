@@ -29,7 +29,7 @@ export function AdminNav({ items, userName, roleName }: { items: NavItem[]; user
     <>
       <div className="sticky top-0 z-40 flex items-center justify-between bg-ink px-4 py-2 text-white lg:hidden">
         <button type="button" onClick={() => setOpen(true)} className="btn btn-ghost !px-2 text-white" aria-label="Abrir menu"><MenuIcon /></button>
-        <span className="font-display text-lg font-extrabold">Painel ToyVille</span>
+        <span className="text-lg font-extrabold">Painel ToyVille</span>
         <Link href="/" className="text-xs font-bold text-accent">Ver loja</Link>
       </div>
       {open && (
@@ -46,7 +46,7 @@ export function AdminNav({ items, userName, roleName }: { items: NavItem[]; user
         </div>
       )}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto bg-ink p-4 lg:flex">
-        <Link href="/admin" className="mb-5 block font-display text-xl font-extrabold text-white">Painel <span className="text-accent">ToyVille</span></Link>
+        <Link href="/admin" className="mb-5 block text-xl font-extrabold text-white">Painel <span className="text-accent">ToyVille</span></Link>
         <nav aria-label="Painel" className="flex-1">{list}</nav>
         <div className="mt-4 border-t border-white/15 pt-3 text-xs text-white/70">
           <p className="font-bold text-white">{userName}</p><p>{roleName}</p>

@@ -202,7 +202,8 @@ export async function savePromotion(input: unknown, userId: string, id?: string)
 
 /* ===================================================================== CONTEÚDO */
 export const bannerSchema = z.object({
-  placement: z.enum(["hero", "promo"]), title: z.string().trim().min(2).max(120), subtitle: optText(200),
+  placement: z.enum(["hero", "side"]), title: z.string().trim().min(2).max(120), subtitle: optText(200),
+  textPosition: z.enum(["left", "right", "overlay"]).default("left"), imageMode: z.enum(["cover", "cutout"]).default("cover"),
   linkUrl: z.preprocess((v) => (v === "" ? null : v), z.string().regex(/^(\/[^\s]*|https:\/\/[^\s]+)$/, "Use um caminho do site (/ofertas) ou https://").nullable()),
   ctaLabel: optText(40), theme: z.enum(["blue", "yellow", "red", "green", "cream"]), position: z.coerce.number().int().min(0).max(999),
   startsAt: z.string().optional(), endsAt: z.string().optional(), isActive: z.boolean(),
@@ -211,9 +212,29 @@ export const bannerSchema = z.object({
 export async function saveBanner(input: unknown, images: { imageUrl?: string | null; mobileImageUrl?: string | null }, userId: string, id?: string) {
   const d = bannerSchema.parse(input);
   const values = { ...d, startsAt: localDate(d.startsAt), endsAt: localDate(d.endsAt), ...images };
-  if (id) await db.update(banners).set(values).where(eq(banners.id, id));
-  else await db.insert(banners).values(values);
+  if (id) {
+    const { position: _keep, ...rest } = values; // a ordem só muda pelos botões de subir/descer
+    await db.update(banners).set(rest).where(eq(banners.id, id));
+  } else {
+    // novo banner entra no fim do seu grupo
+    const [{ n }] = await db.select({ n: sql<number>`coalesce(max(${banners.position}), -1)::int + 1` }).from(banners).where(eq(banners.placement, d.placement));
+    await db.insert(banners).values({ ...values, position: n });
+  }
   await audit({ userId, action: id ? "banner.update" : "banner.create", entity: "banner", entityId: id ?? d.title });
+}
+
+/** Sobe/desce um banner dentro do seu grupo (principal ou secundário), renumerando as posições. */
+export async function moveBanner(id: string, direction: "up" | "down", userId: string) {
+  await db.transaction(async (tx) => {
+    const [b] = await tx.select().from(banners).where(eq(banners.id, id));
+    if (!b) throw new AppError("not_found", "Banner não encontrado", 404);
+    const group = await tx.select({ id: banners.id }).from(banners).where(eq(banners.placement, b.placement)).orderBy(banners.position, banners.createdAt);
+    const i = group.findIndex((x) => x.id === id), j = direction === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= group.length) return;
+    [group[i], group[j]] = [group[j], group[i]];
+    for (let k = 0; k < group.length; k++) await tx.update(banners).set({ position: k }).where(eq(banners.id, group[k].id));
+  });
+  await audit({ userId, action: "banner.move", entity: "banner", entityId: id, data: { direction } });
 }
 
 export async function saveHomeSection(id: string, input: { title?: string; subtitle?: string; position?: number; isActive?: boolean; limit?: number; productIds?: string[] }, userId: string) {

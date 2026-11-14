@@ -2,7 +2,7 @@ import "server-only";
 import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db/client";
-import { addresses, carts, favorites, passwordResetTokens, reviews, roles, sessions, supportTickets, users } from "../db/schema";
+import { addresses, carts, favorites, newsletterSubscribers, passwordResetTokens, reviews, roles, sessions, supportTickets, users } from "../db/schema";
 import { AppError, isUniqueViolation } from "../errors";
 import { hashPassword, passwordProblem, randomToken, sha256, verifyPassword } from "../auth/password";
 import { createSession, destroyAllSessions } from "../auth/session";
@@ -148,6 +148,9 @@ export async function toggleFavorite(userId: string, productId: string): Promise
  */
 export async function anonymizeAccount(userId: string, meta: { ip: string }) {
   await db.transaction(async (tx) => {
+    // também sai da newsletter (o e-mail deixa de existir em qualquer lista da loja)
+    const [current] = await tx.select({ email: users.email }).from(users).where(eq(users.id, userId));
+    if (current) await tx.delete(newsletterSubscribers).where(eq(newsletterSubscribers.email, current.email.trim().toLowerCase()));
     const anonEmail = `excluido+${userId}@anonimo.invalid`;
     await tx.update(users).set({
       name: "Conta excluída", email: anonEmail, phone: null, passwordHash: null, isActive: false,
